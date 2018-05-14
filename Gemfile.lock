@@ -17,6 +17,9 @@ GEM
       concurrent-ruby (~> 1.0)
     minitest (5.11.3)
     rake (10.5.0)
+    redis (3.3.5)
+    redis-cluster (0.0.9)
+      redis (~> 3.0)
     rspec (3.7.0)
       rspec-core (~> 3.7.0)
       rspec-expectations (~> 3.7.0)
@@ -41,6 +44,7 @@ DEPENDENCIES
   activesupport
   bundler (~> 1.16)
   rake (~> 10.0)
+  redis-cluster
   rspec (~> 3.0)
   toggleable!
 
