@@ -2,6 +2,7 @@
 require "toggleable/version"
 require "toggleable/feature_toggler"
 require "toggleable/base"
+require "toggleable/schedule"
 require "toggleable/redis_configuration"
 
 module Toggleable

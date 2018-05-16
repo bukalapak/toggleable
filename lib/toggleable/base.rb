@@ -55,6 +55,8 @@ module Toggleable
       end
 
       def snakecase
+        raise ArgumentError.new('Only string parameter allowed') unless self.is_a? String
+
         gsub(/([A-Z]+)([A-Z][a-z])/,'\1_\2').
         gsub(/([a-z\d])([A-Z])/,'\1_\2').
         tr('-', '_').
