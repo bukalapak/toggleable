@@ -1,7 +1,7 @@
 # Provides a common interface for toggling features
 require "toggleable/version"
-require "toggleable/base"
 require "toggleable/feature_toggler"
+require "toggleable/base"
 require "toggleable/redis_configuration"
 
 module Toggleable
