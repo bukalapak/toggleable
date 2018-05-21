@@ -3,7 +3,7 @@ require "toggleable/version"
 require "toggleable/feature_toggler"
 require "toggleable/base"
 require "toggleable/schedule"
-require "toggleable/redis_configuration"
+require "toggleable/configuration"
 
 module Toggleable
   class << self
@@ -13,11 +13,10 @@ module Toggleable
   module_function
 
   def configuration
-    @configuration ||= Toggleable::RedisConfiguration.new
+    @configuration ||= Toggleable::Configuration.new
   end
 
   def configure
     yield(configuration)
-    $redis_host = RedisCluster.new(configuration.hosts, cluster_opts: configuration.cluster_opts, redis_opts: configuration.redis_opts)
   end
 end

@@ -17,16 +17,16 @@ module Toggleable
       def active?
         return toggle_active.to_bool unless toggle_active.nil?
 
-        $redis_host.hsetnx(NAMESPACE, key, DEFAULT_VALUE)
+        Toggleable::Configuration.redis.hsetnx(NAMESPACE, key, DEFAULT_VALUE)
         DEFAULT_VALUE
       end
 
       def activate!
-        $redis_host.hset(NAMESPACE, key, true)
+        Toggleable::Configuration.redis.hset(NAMESPACE, key, true)
       end
 
       def deactivate!
-        $redis_host.hset(NAMESPACE, key, false)
+        Toggleable::Configuration.redis.hset(NAMESPACE, key, false)
       end
 
       def key
@@ -47,7 +47,7 @@ module Toggleable
       def toggle_active
         return @_toggle_active if defined?(@_toggle_active) && !read_expired? && !Rails.env.test?
         @_last_read_at = Time.now.localtime
-        @_toggle_active = $redis_host.hget(NAMESPACE, key)
+        @_toggle_active = Toggleable::Configuration.redis.hget(NAMESPACE, key)
       end
 
       def read_expired?

@@ -19,13 +19,13 @@ module Toggleable
     end
 
     def mass_toggle!(mapping)
-      $redis_host.hmset(NAMESPACE, mapping.flatten)
+      Toggleable::Configuration.redis.hmset(NAMESPACE, mapping.flatten)
     end
 
     private
 
     def keys
-      $redis_host.hgetall(NAMESPACE)
+      Toggleable::Configuration.redis.hgetall(NAMESPACE)
     end
   end
 end
