@@ -1,5 +1,6 @@
 # Provides a common interface for toggling features
 require "toggleable/version"
+require "toggleable/redis_abstract"
 require "toggleable/feature_toggler"
 require "toggleable/base"
 require "toggleable/schedule"
