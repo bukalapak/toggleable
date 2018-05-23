@@ -7,7 +7,7 @@ module Toggleable
 
     NAMESPACE = Toggleable::FeatureToggler::NAMESPACE
     DEFAULT_VALUE = false
-    EXPIRED_INTERVAL = 5.minutes
+    EXPIRED_INTERVAL = Toggleable.configration.expiration_time
 
     included do
       Toggleable::FeatureToggler.instance.register(key)
@@ -17,16 +17,16 @@ module Toggleable
       def active?
         return toggle_active.to_bool unless toggle_active.nil?
 
-        Toggleable::Configuration.redis.hsetnx(NAMESPACE, key, DEFAULT_VALUE)
+        Toggleable.configuration.redis.hsetnx(NAMESPACE, key, DEFAULT_VALUE)
         DEFAULT_VALUE
       end
 
       def activate!
-        Toggleable::Configuration.redis.hset(NAMESPACE, key, true)
+        Toggleable.configuration.redis.hset(NAMESPACE, key, true)
       end
 
       def deactivate!
-        Toggleable::Configuration.redis.hset(NAMESPACE, key, false)
+        Toggleable.configuration.redis.hset(NAMESPACE, key, false)
       end
 
       def key
@@ -47,7 +47,7 @@ module Toggleable
       def toggle_active
         return @_toggle_active if defined?(@_toggle_active) && !read_expired? && !Rails.env.test?
         @_last_read_at = Time.now.localtime
-        @_toggle_active = Toggleable::Configuration.redis.hget(NAMESPACE, key)
+        @_toggle_active = Toggleable.configuration.redis.hget(NAMESPACE, key)
       end
 
       def read_expired?
