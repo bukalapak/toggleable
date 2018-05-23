@@ -1,36 +1,11 @@
 module Toggleable
   class RedisAbstract
+    REQUIRED_METHODS = ['get', 'set', 'hget', 'hgetall', 'hset', 'hsetnx', 'hmset', 'expire'].freeze
 
-    def get
-      raise NotImplementedError.new('You must implement this method')
-    end
-
-    def set
-      raise NotImplementedError.new('You must implement this method')
-    end
-
-    def hget
-      raise NotImplementedError.new('You must implement this method')
-    end
-
-    def hset
-      raise NotImplementedError.new('You must implement this method')
-    end
-
-    def hgetall
-      raise NotImplementedError.new('You must implement this method')
-    end
-
-    def hsetnx
-      raise NotImplementedError.new('You must implement this method')
-    end
-
-    def hmset
-      raise NotImplementedError.new('You must implement this method')
-    end
-
-    def expire
-      raise NotImplementedError.new('You must implement this method')
+    REQUIRED_METHODS.each do |method|
+      define_method("#{method}") do |*args|
+        raise NotImplementedError.new("You must implement #{method}")
+      end
     end
   end
 end
