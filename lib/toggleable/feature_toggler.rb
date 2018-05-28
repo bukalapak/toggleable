@@ -1,3 +1,5 @@
+require 'singleton'
+
 module Toggleable
   class FeatureToggler
     include Singleton

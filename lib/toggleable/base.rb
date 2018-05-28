@@ -1,5 +1,8 @@
 # Provides a common interface for toggling features
+require 'active_support/concern'
+require 'active_support/inflector'
 require 'active_support/core_ext/numeric/time'
+require 'pry'
 
 module Toggleable
   module Base
@@ -7,7 +10,6 @@ module Toggleable
 
     NAMESPACE = Toggleable::FeatureToggler::NAMESPACE
     DEFAULT_VALUE = false
-    EXPIRED_INTERVAL = Toggleable.configration.expiration_time
 
     included do
       Toggleable::FeatureToggler.instance.register(key)
@@ -30,7 +32,7 @@ module Toggleable
       end
 
       def key
-        @_key ||= name.snakecase
+        @_key ||= name.underscore
       end
 
       def description
@@ -45,24 +47,13 @@ module Toggleable
       private
 
       def toggle_active
-        return @_toggle_active if defined?(@_toggle_active) && !read_expired? && !Rails.env.test?
+        return @_toggle_active if defined?(@_toggle_active) && !read_expired? && !Toggleable.configuration.development_mode
         @_last_read_at = Time.now.localtime
         @_toggle_active = Toggleable.configuration.redis.hget(NAMESPACE, key)
       end
 
       def read_expired?
-        @_last_read_at < Time.now.localtime - EXPIRED_INTERVAL
-      end
-
-      def snakecase
-        raise ArgumentError.new('Only string parameter allowed') unless self.is_a? String
-
-        gsub(/([A-Z]+)([A-Z][a-z])/,'\1_\2').
-        gsub(/([a-z\d])([A-Z])/,'\1_\2').
-        tr('-', '_').
-        gsub(/\s/, '_').
-        gsub(/__+/, '_').
-        downcase
+        @_last_read_at < Time.now.localtime - Toggleable.configuration.expiration_time
       end
     end
   end
