@@ -2,7 +2,7 @@
 require 'active_support/concern'
 require 'active_support/inflector'
 require 'active_support/core_ext/numeric/time'
-require 'pry'
+require 'active_support/core_ext/object/blank'
 
 module Toggleable
   module Base
@@ -17,7 +17,7 @@ module Toggleable
 
     module ClassMethods
       def active?
-        return toggle_active.to_bool unless toggle_active.nil?
+        return to_bool(toggle_active) unless toggle_active.nil?
 
         Toggleable.configuration.redis.hsetnx(NAMESPACE, key, DEFAULT_VALUE)
         DEFAULT_VALUE
@@ -54,6 +54,12 @@ module Toggleable
 
       def read_expired?
         @_last_read_at < Time.now.localtime - Toggleable.configuration.expiration_time
+      end
+
+      def to_bool(value)
+        return true if value == true || value =~ (/^(true|t|yes|y|1)$/i)
+        return false if value == false || value.blank? || value =~ (/^(false|f|no|n|0)$/i)
+        raise ArgumentError.new("invalid value for Boolean: \"#{value}\"")
       end
     end
   end

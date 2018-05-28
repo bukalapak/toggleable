@@ -1,8 +1,5 @@
 require 'spec_helper'
-require 'toggleable'
 require 'active_support/inflector'
-# require 'pry'
-require 'erb'
 
 class SampleFeature
   include Toggleable::Base
