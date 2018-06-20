@@ -2,6 +2,7 @@ PATH
   remote: .
   specs:
     toggleable (0.1.0)
+      activesupport (>= 4.0.0)
 
 GEM
   remote: https://rubygems.org/
@@ -20,7 +21,7 @@ GEM
     json (2.1.0)
     minitest (5.11.3)
     rake (10.5.0)
-    redis (4.0.1)
+    redis (3.3.5)
     rspec (3.7.0)
       rspec-core (~> 3.7.0)
       rspec-expectations (~> 3.7.0)
@@ -47,13 +48,12 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  activesupport
   bundler (~> 1.16)
-  dotenv
+  dotenv (>= 2.4.0)
   rake (~> 10.0)
-  redis
+  redis (~> 3.0)
   rspec (~> 3.0)
-  simplecov
+  simplecov (>= 0.16.1)
   toggleable!
 
 BUNDLED WITH
