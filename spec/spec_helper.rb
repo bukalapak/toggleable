@@ -4,7 +4,6 @@ $LOAD_PATH.push File.expand_path('../../lib', __FILE__)
 require 'simplecov'
 require 'redis'
 require 'toggleable'
-require 'pry'
 require 'dotenv'
 
 SimpleCov.formatter = SimpleCov::Formatter::HTMLFormatter
