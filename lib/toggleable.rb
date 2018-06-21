@@ -4,7 +4,6 @@ require "toggleable/configuration"
 require "toggleable/redis_abstract"
 require "toggleable/feature_toggler"
 require "toggleable/base"
-require "toggleable/schedule"
 
 module Toggleable
   class << self
