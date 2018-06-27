@@ -17,7 +17,7 @@ module Toggleable
 
     module ClassMethods
       def active?
-        return to_bool(toggle_active) unless toggle_active.nil?
+        return to_bool(toggle_active.to_s) unless toggle_active.nil?
 
         Toggleable.configuration.redis.hsetnx(NAMESPACE, key, DEFAULT_VALUE)
         DEFAULT_VALUE
@@ -39,7 +39,7 @@ module Toggleable
         name
       end
 
-      # should we encourage proxy classes, heh heh
+      # should we encourage proxy classes
       def process
         yield if active?
       end
@@ -57,8 +57,8 @@ module Toggleable
       end
 
       def to_bool(value)
-        return true if value == true || value =~ (/^(true|t|yes|y|1)$/i)
-        return false if value == false || value.blank? || value =~ (/^(false|f|no|n|0)$/i)
+        return true if value =~ (/^(true|t|yes|y|1)$/i)
+        return false if value.empty? || value =~ (/^(false|f|no|n|0)$/i)
         raise ArgumentError.new("invalid value for Boolean: \"#{value}\"")
       end
     end
