@@ -21,13 +21,13 @@ module Toggleable
     end
 
     def mass_toggle!(mapping)
-      Toggleable.configuration.redis.hmset(NAMESPACE, mapping.flatten)
+      Toggleable.configuration.storage.hmset(NAMESPACE, mapping.flatten)
     end
 
     private
 
     def keys
-      Toggleable.configuration.redis.hgetall(NAMESPACE)
+      Toggleable.configuration.storage.hgetall(NAMESPACE)
     end
   end
 end

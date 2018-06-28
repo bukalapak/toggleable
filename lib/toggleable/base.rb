@@ -19,16 +19,16 @@ module Toggleable
       def active?
         return to_bool(toggle_active.to_s) unless toggle_active.nil?
 
-        Toggleable.configuration.redis.hsetnx(NAMESPACE, key, DEFAULT_VALUE)
+        Toggleable.configuration.storage.hsetnx(NAMESPACE, key, DEFAULT_VALUE)
         DEFAULT_VALUE
       end
 
       def activate!
-        Toggleable.configuration.redis.hset(NAMESPACE, key, true)
+        Toggleable.configuration.storage.hset(NAMESPACE, key, true)
       end
 
       def deactivate!
-        Toggleable.configuration.redis.hset(NAMESPACE, key, false)
+        Toggleable.configuration.storage.hset(NAMESPACE, key, false)
       end
 
       def key
@@ -49,7 +49,7 @@ module Toggleable
       def toggle_active
         return @_toggle_active if defined?(@_toggle_active) && !read_expired? && Toggleable.configuration.use_memoization
         @_last_read_at = Time.now.localtime
-        @_toggle_active = Toggleable.configuration.redis.hget(NAMESPACE, key)
+        @_toggle_active = Toggleable.configuration.storage.hget(NAMESPACE, key)
       end
 
       def read_expired?

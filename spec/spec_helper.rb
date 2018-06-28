@@ -12,7 +12,7 @@ SimpleCov.start
 Dotenv.load
 
 Toggleable.configure do |t|
-  t.redis = Redis.new(host: ENV['HOST'], port: ENV['PORT'])
+  t.storage = Redis.new(host: ENV['HOST'], port: ENV['PORT'])
   t.expiration_time = 5.minutes
-  t.development_mode = true
+  t.use_memoization = false
 end
