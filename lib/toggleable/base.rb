@@ -47,7 +47,7 @@ module Toggleable
       private
 
       def toggle_active
-        return @_toggle_active if defined?(@_toggle_active) && !read_expired? && !Toggleable.configuration.development_mode
+        return @_toggle_active if defined?(@_toggle_active) && !read_expired? && Toggleable.configuration.use_memoization
         @_last_read_at = Time.now.localtime
         @_toggle_active = Toggleable.configuration.redis.hget(NAMESPACE, key)
       end
