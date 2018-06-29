@@ -23,12 +23,12 @@ module Toggleable
         DEFAULT_VALUE
       end
 
-      def activate!(actor = nil)
+      def activate!(actor: nil)
         Toggleable.configuration.logger&.log(key: key, value: true, actor: actor)
         Toggleable.configuration.storage.hset(NAMESPACE, key, true)
       end
 
-      def deactivate!(actor = nil)
+      def deactivate!(actor: nil)
         Toggleable.configuration.logger&.log(key: key, value: true, actor: actor)
         Toggleable.configuration.storage.hset(NAMESPACE, key, false)
       end
