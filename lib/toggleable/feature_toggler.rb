@@ -21,7 +21,7 @@ module Toggleable
     end
 
     def mass_toggle!(mapping)
-      mapping.each { |key, val| Toggleable.configuration.logger&.log(name: key, value: val, actor: actor) }
+      mapping.each { |key, val| Toggleable.configuration.logger&.log(key: key, value: val, actor: actor) }
       Toggleable.configuration.storage.hmset(NAMESPACE, mapping.flatten)
     end
 
