@@ -21,7 +21,7 @@ module Toggleable
     end
 
     def mass_toggle!(mapping, actor: nil)
-      mapping.each { |key, val| Toggleable.configuration.logger&.log(key: key, value: val, actor: actor) }
+      log_changes(mapping, actor) if Toggleable::configuration.logger
       Toggleable.configuration.storage.hmset(NAMESPACE, mapping.flatten)
     end
 
@@ -29,6 +29,14 @@ module Toggleable
 
     def keys
       Toggleable.configuration.storage.hgetall(NAMESPACE)
+    end
+
+    def log_changes
+      previous_values = available_features
+      mapping.each do |key, val|
+        next if previous_values[key] == val
+        Toggleable.configuration.logger.log(key: key, value: val, actor: actor)
+      end
     end
   end
 end
