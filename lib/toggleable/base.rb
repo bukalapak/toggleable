@@ -29,7 +29,7 @@ module Toggleable
       end
 
       def deactivate!(actor: nil)
-        Toggleable.configuration.logger&.log(key: key, value: true, actor: actor)
+        Toggleable.configuration.logger&.log(key: key, value: false, actor: actor)
         Toggleable.configuration.storage.hset(NAMESPACE, key, false)
       end
 
