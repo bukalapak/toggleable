@@ -34,7 +34,7 @@ module Toggleable
     def log_changes(mapping, actor)
       previous_values = available_features
       mapping.each do |key, val|
-        next if previous_values[key] == val
+        next if previous_values[key].to_s == val.to_s
         Toggleable.configuration.logger.log(key: key, value: val, actor: actor)
       end
     end
