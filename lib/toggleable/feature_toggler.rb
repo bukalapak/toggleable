@@ -31,7 +31,7 @@ module Toggleable
       Toggleable.configuration.storage.hgetall(NAMESPACE)
     end
 
-    def log_changes
+    def log_changes(mapping, actor)
       previous_values = available_features
       mapping.each do |key, val|
         next if previous_values[key] == val
