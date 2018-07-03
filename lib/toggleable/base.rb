@@ -22,13 +22,11 @@ module Toggleable
       end
 
       def activate!(actor: nil)
-        Toggleable.configuration.logger&.log(key: key, value: true, actor: actor)
-        Toggleable.configuration.storage.set(Toggleable.configuration.namespace, key, true)
+        toggle_key(true, actor)
       end
 
       def deactivate!(actor: nil)
-        Toggleable.configuration.logger&.log(key: key, value: false, actor: actor)
-        Toggleable.configuration.storage.set(Toggleable.configuration.namespace, key, false)
+        toggle_key(false, actor)
       end
 
       def key
@@ -46,10 +44,20 @@ module Toggleable
 
       private
 
+      def toggle_key(value, actor)
+        Toggleable.configuration.logger&.log(key: key, value: value, actor: actor)
+
+        if Toggleable.configuration.namespace
+          Toggleable.configuration.storage.set(Toggleable.configuration.namespace, key, value)
+        else
+          Toggleable.configuration.storage.set(key, value)
+        end
+      end
+
       def toggle_active
         return @_toggle_active if defined?(@_toggle_active) && !read_expired? && Toggleable.configuration.use_memoization
         @_last_read_at = Time.now.localtime
-        @_toggle_active = Toggleable.configuration.storage.get(Toggleable.configuration.namespace, key)
+        @_toggle_active = Toggleable.configuration.namespace ? Toggleable.configuration.storage.get(Toggleable.configuration.namespace, key) : Toggleable.configuration.storage.get(key)
       end
 
       def read_expired?

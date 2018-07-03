@@ -1,6 +1,6 @@
 module Toggleable
   class StorageAbstract
-    ## the redis you provide must implement these methods
+    ## the storage you provide must implement these methods
 
     def get(_namespace, _key)
       raise NotImplementedError.new("You must implement #{__method__.to_s}")

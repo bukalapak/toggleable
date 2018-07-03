@@ -20,13 +20,21 @@ module Toggleable
 
     def mass_toggle!(mapping, actor: nil)
       log_changes(mapping, actor) if Toggleable::configuration.logger
-      Toggleable.configuration.storage.mass_set(Toggleable.configuration.namespace, mapping.flatten)
+      if Toggleable.configuration.namespace
+        Toggleable.configuration.storage.mass_set(Toggleable.configuration.namespace, mapping.flatten)
+      else
+        Toggleable.configuration.storage.mass_set(mapping.flatten)
+      end
     end
 
     private
 
     def keys
-      Toggleable.configuration.storage.get_all(Toggleable.configuration.namespace)
+      if Toggleable.configuration.namespace
+        Toggleable.configuration.storage.get_all(Toggleable.configuration.namespace)
+      else
+        Toggleable.configuration.storage.get_all
+      end
     end
 
     def log_changes(mapping, actor)

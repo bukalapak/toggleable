@@ -12,7 +12,7 @@ SimpleCov.start
 
 Dotenv.load
 
-
+## Sample implementation for storage
 class SampleStorage < Toggleable::StorageAbstract
   attr_accessor :storage
 
@@ -41,6 +41,7 @@ class SampleStorage < Toggleable::StorageAbstract
   end
 end
 
+## Sample implementation for logger
 class SampleLogger < Toggleable::LoggerAbstract
   attr_accessor :logger
 
@@ -53,6 +54,7 @@ class SampleLogger < Toggleable::LoggerAbstract
   end
 end
 
+## Initialize Toggleable
 storage = SampleStorage.new
 logger = SampleLogger.new
 
