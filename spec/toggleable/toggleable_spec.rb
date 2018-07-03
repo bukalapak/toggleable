@@ -26,15 +26,22 @@ RSpec.describe Toggleable::Base, :type => :model do
   it { expect(subject.description).to eq('description') }
 
   context 'logic behavior' do
+    let(:actor_id) { 1 }
 
     context 'activation' do
-      before { subject.activate! }
-      it { expect(subject.active?).to be true }
+      it do
+        expect(Toggleable.configuration.logger).to receive(:log).with(key: SampleFeature.key, value: true, actor: actor_id).and_return(true)
+        subject.activate!(actor: actor_id)
+        expect(subject.active?).to be true
+      end
     end
 
     context 'deactivation' do
-      before { subject.deactivate! }
-      it { expect(subject.active?).to be false }
+      it do
+        expect(Toggleable.configuration.logger).to receive(:log).with(key: SampleFeature.key, value: false, actor: actor_id).and_return(true)
+        subject.deactivate!(actor: actor_id)
+        expect(subject.active?).to be false
+      end
     end
   end
 end

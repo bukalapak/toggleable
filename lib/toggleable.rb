@@ -2,6 +2,7 @@
 require "toggleable/version"
 require "toggleable/configuration"
 require "toggleable/redis_abstract"
+require "toggleable/logger_abstract"
 require "toggleable/feature_toggler"
 require "toggleable/base"
 

@@ -20,14 +20,23 @@ module Toggleable
       keys.slice(*features)
     end
 
-    def mass_toggle!(mapping)
-      Toggleable.configuration.redis.hmset(NAMESPACE, mapping.flatten)
+    def mass_toggle!(mapping, actor: nil)
+      log_changes(mapping, actor) if Toggleable::configuration.logger
+      Toggleable.configuration.storage.hmset(NAMESPACE, mapping.flatten)
     end
 
     private
 
     def keys
-      Toggleable.configuration.redis.hgetall(NAMESPACE)
+      Toggleable.configuration.storage.hgetall(NAMESPACE)
+    end
+
+    def log_changes(mapping, actor)
+      previous_values = available_features
+      mapping.each do |key, val|
+        next if previous_values[key].to_s == val.to_s
+        Toggleable.configuration.logger.log(key: key, value: val, actor: actor)
+      end
     end
   end
 end
