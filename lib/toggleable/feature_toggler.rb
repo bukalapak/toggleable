@@ -4,8 +4,6 @@ module Toggleable
   class FeatureToggler
     include Singleton
 
-    NAMESPACE = 'features'.freeze
-
     attr_reader :features
 
     def initialize
@@ -22,13 +20,13 @@ module Toggleable
 
     def mass_toggle!(mapping, actor: nil)
       log_changes(mapping, actor) if Toggleable::configuration.logger
-      Toggleable.configuration.storage.hmset(NAMESPACE, mapping.flatten)
+      Toggleable.configuration.storage.mass_set(Toggleable.configuration.namespace, mapping.flatten)
     end
 
     private
 
     def keys
-      Toggleable.configuration.storage.hgetall(NAMESPACE)
+      Toggleable.configuration.storage.get_all(Toggleable.configuration.namespace)
     end
 
     def log_changes(mapping, actor)

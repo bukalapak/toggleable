@@ -2,13 +2,11 @@
 require 'active_support/concern'
 require 'active_support/inflector'
 require 'active_support/core_ext/numeric/time'
-require 'active_support/core_ext/object/blank'
 
 module Toggleable
   module Base
     extend ActiveSupport::Concern
 
-    NAMESPACE = Toggleable::FeatureToggler::NAMESPACE
     DEFAULT_VALUE = false
 
     included do
@@ -19,18 +17,18 @@ module Toggleable
       def active?
         return to_bool(toggle_active.to_s) unless toggle_active.nil?
 
-        Toggleable.configuration.storage.hsetnx(NAMESPACE, key, DEFAULT_VALUE)
+        Toggleable.configuration.storage.set_if_not_exist(Toggleable.configuration.namespace, key, DEFAULT_VALUE)
         DEFAULT_VALUE
       end
 
       def activate!(actor: nil)
         Toggleable.configuration.logger&.log(key: key, value: true, actor: actor)
-        Toggleable.configuration.storage.hset(NAMESPACE, key, true)
+        Toggleable.configuration.storage.set(Toggleable.configuration.namespace, key, true)
       end
 
       def deactivate!(actor: nil)
         Toggleable.configuration.logger&.log(key: key, value: false, actor: actor)
-        Toggleable.configuration.storage.hset(NAMESPACE, key, false)
+        Toggleable.configuration.storage.set(Toggleable.configuration.namespace, key, false)
       end
 
       def key
@@ -51,7 +49,7 @@ module Toggleable
       def toggle_active
         return @_toggle_active if defined?(@_toggle_active) && !read_expired? && Toggleable.configuration.use_memoization
         @_last_read_at = Time.now.localtime
-        @_toggle_active = Toggleable.configuration.storage.hget(NAMESPACE, key)
+        @_toggle_active = Toggleable.configuration.storage.get(Toggleable.configuration.namespace, key)
       end
 
       def read_expired?
