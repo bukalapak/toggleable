@@ -27,7 +27,7 @@ jobs:
       - run:
           name: run rubocop
           command: |
-            bundle exec rubocop
+            bundle exec rake lint
       - run:
           name: run tests
           command: |
