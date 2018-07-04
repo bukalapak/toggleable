@@ -17,7 +17,7 @@ module Toggleable
       def active?
         return to_bool(toggle_active.to_s) unless toggle_active.nil?
 
-        Toggleable.configuration.storage.set_if_not_exist(Toggleable.configuration.namespace, key, DEFAULT_VALUE)
+        Toggleable.configuration.storage.set_if_not_exist(key, DEFAULT_VALUE, namespace: Toggleable.configuration.namespace)
         DEFAULT_VALUE
       end
 
@@ -48,7 +48,7 @@ module Toggleable
         Toggleable.configuration.logger&.log(key: key, value: value, actor: actor)
 
         if Toggleable.configuration.namespace
-          Toggleable.configuration.storage.set(Toggleable.configuration.namespace, key, value)
+          Toggleable.configuration.storage.set(key, value, namespace: Toggleable.configuration.namespace)
         else
           Toggleable.configuration.storage.set(key, value)
         end
@@ -57,7 +57,7 @@ module Toggleable
       def toggle_active
         return @_toggle_active if defined?(@_toggle_active) && !read_expired? && Toggleable.configuration.use_memoization
         @_last_read_at = Time.now.localtime
-        @_toggle_active = Toggleable.configuration.namespace ? Toggleable.configuration.storage.get(Toggleable.configuration.namespace, key) : Toggleable.configuration.storage.get(key)
+        @_toggle_active = Toggleable.configuration.namespace ? Toggleable.configuration.storage.get(key, namespace: Toggleable.configuration.namespace) : Toggleable.configuration.storage.get(key)
       end
 
       def read_expired?

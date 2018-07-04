@@ -20,23 +20,23 @@ class SampleStorage < Toggleable::StorageAbstract
     @storage = Redis.new(host: ENV['HOST'], port: ENV['PORT'])
   end
 
-  def get(namespace, key)
+  def get(key, namespace:)
     storage.hget(namespace, key)
   end
 
-  def get_all(namespace)
+  def get_all(namespace:)
     storage.hgetall(namespace)
   end
 
-  def set(namespace, key, value)
+  def set(key, value, namespace:)
     storage.hset(namespace, key, value)
   end
 
-  def set_if_not_exist(namespace, key, value)
+  def set_if_not_exist(key, value, namespace:)
     storage.hsetnx(namespace, key, value)
   end
 
-  def mass_set(namespace, *attrs)
+  def mass_set(*attrs, namespace:)
     storage.hmset(namespace, *attrs)
   end
 end
