@@ -13,6 +13,10 @@ jobs:
           - v1-dependencies-{{ checksum "Gemfile.lock" }}
           - v1-dependencies-
       - run:
+          name: Installing gems
+          command: |
+            gem install bundler -v 1.14.6
+      - run:
           name: install dependencies
           command: |
             bundle install --jobs=4 --retry=3 --path vendor/bundle
