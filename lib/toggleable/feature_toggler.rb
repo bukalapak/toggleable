@@ -1,6 +1,9 @@
+# frozen_string_literal: true
+
 require 'singleton'
 
 module Toggleable
+  # Toggleable::FeatureToggler provides an instance to manage all toggleable keys.
   class FeatureToggler
     include Singleton
 
@@ -19,7 +22,7 @@ module Toggleable
     end
 
     def mass_toggle!(mapping, actor: nil)
-      log_changes(mapping, actor) if Toggleable::configuration.logger
+      log_changes(mapping, actor) if Toggleable.configuration.logger
       if Toggleable.configuration.namespace
         Toggleable.configuration.storage.mass_set(mapping.flatten, namespace: Toggleable.configuration.namespace)
       else

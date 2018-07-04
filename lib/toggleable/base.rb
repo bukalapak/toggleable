@@ -1,9 +1,11 @@
-# Provides a common interface for toggling features
+# frozen_string_literal: true
+
 require 'active_support/concern'
 require 'active_support/inflector'
 require 'active_support/core_ext/numeric/time'
 
 module Toggleable
+  # Toggleable::Base provides basic functionality for toggling into a class.
   module Base
     extend ActiveSupport::Concern
 
@@ -13,6 +15,7 @@ module Toggleable
       Toggleable::FeatureToggler.instance.register(key)
     end
 
+    # it will generate these methods into included class.
     module ClassMethods
       def active?
         return to_bool(toggle_active.to_s) unless toggle_active.nil?
@@ -31,7 +34,7 @@ module Toggleable
       end
 
       def key
-        @_key ||= name.underscore
+        @key ||= name.underscore
       end
 
       def description
@@ -66,9 +69,9 @@ module Toggleable
       end
 
       def to_bool(value)
-        return true if value =~ (/^(true|t|yes|y|1)$/i)
-        return false if value.empty? || value =~ (/^(false|f|no|n|0)$/i)
-        raise ArgumentError.new("invalid value for Boolean: \"#{value}\"")
+        return true if value =~ /^(true|t|yes|y|1)$/i
+        return false if value.empty? || value =~ /^(false|f|no|n|0)$/i
+        raise ArgumentError, "invalid value for Boolean: \"#{value}\""
       end
     end
   end
