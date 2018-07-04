@@ -14,7 +14,7 @@ end
 RSpec.describe Toggleable::Base, :type => :model do
   subject { SampleFeature }
 
-  it { expect(described_class.const_defined? 'NAMESPACE').to be_truthy }
+  it { expect(described_class.const_defined? 'DEFAULT_VALUE').to be_truthy }
 
   it { is_expected.to respond_to(:active?) }
   it { is_expected.to respond_to(:activate!) }

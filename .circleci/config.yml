@@ -25,6 +25,10 @@ jobs:
             - ./vendor/bundle
           key: v1-dependencies-{{ checksum "Gemfile.lock" }}
       - run:
+          name: run rubocop
+          command: |
+            bundle exec rake lint
+      - run:
           name: run tests
           command: |
             mkdir /tmp/test-results

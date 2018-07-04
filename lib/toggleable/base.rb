@@ -1,40 +1,40 @@
-# Provides a common interface for toggling features
+# frozen_string_literal: true
+
 require 'active_support/concern'
 require 'active_support/inflector'
 require 'active_support/core_ext/numeric/time'
-require 'active_support/core_ext/object/blank'
 
 module Toggleable
+  # Toggleable::Base provides basic functionality for toggling into a class.
   module Base
     extend ActiveSupport::Concern
 
-    NAMESPACE = Toggleable::FeatureToggler::NAMESPACE
     DEFAULT_VALUE = false
 
     included do
       Toggleable::FeatureToggler.instance.register(key)
     end
 
+    # it will generate these methods into included class.
     module ClassMethods
       def active?
         return to_bool(toggle_active.to_s) unless toggle_active.nil?
 
-        Toggleable.configuration.storage.hsetnx(NAMESPACE, key, DEFAULT_VALUE)
+        # Lazily register the key
+        Toggleable.configuration.storage.set_if_not_exist(key, value, namespace: Toggleable.configuration.namespace)
         DEFAULT_VALUE
       end
 
       def activate!(actor: nil)
-        Toggleable.configuration.logger&.log(key: key, value: true, actor: actor)
-        Toggleable.configuration.storage.hset(NAMESPACE, key, true)
+        toggle_key(true, actor)
       end
 
       def deactivate!(actor: nil)
-        Toggleable.configuration.logger&.log(key: key, value: false, actor: actor)
-        Toggleable.configuration.storage.hset(NAMESPACE, key, false)
+        toggle_key(false, actor)
       end
 
       def key
-        @_key ||= name.underscore
+        @key ||= name.underscore
       end
 
       def description
@@ -48,10 +48,20 @@ module Toggleable
 
       private
 
+      def toggle_key(value, actor)
+        Toggleable.configuration.logger&.log(key: key, value: value, actor: actor)
+
+        if Toggleable.configuration.namespace
+          Toggleable.configuration.storage.set(key, value, namespace: Toggleable.configuration.namespace)
+        else
+          Toggleable.configuration.storage.set(key, value)
+        end
+      end
+
       def toggle_active
         return @_toggle_active if defined?(@_toggle_active) && !read_expired? && Toggleable.configuration.use_memoization
         @_last_read_at = Time.now.localtime
-        @_toggle_active = Toggleable.configuration.storage.hget(NAMESPACE, key)
+        @_toggle_active = Toggleable.configuration.namespace ? Toggleable.configuration.storage.get(key, namespace: Toggleable.configuration.namespace) : Toggleable.configuration.storage.get(key)
       end
 
       def read_expired?
@@ -59,9 +69,9 @@ module Toggleable
       end
 
       def to_bool(value)
-        return true if value =~ (/^(true|t|yes|y|1)$/i)
-        return false if value.empty? || value =~ (/^(false|f|no|n|0)$/i)
-        raise ArgumentError.new("invalid value for Boolean: \"#{value}\"")
+        return true if value =~ /^(true|t|yes|y|1)$/i
+        return false if value.empty? || value =~ /^(false|f|no|n|0)$/i
+        raise ArgumentError, "invalid value for Boolean: \"#{value}\""
       end
     end
   end

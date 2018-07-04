@@ -1,11 +1,13 @@
-# Provides a common interface for toggling features
-require "toggleable/version"
-require "toggleable/configuration"
-require "toggleable/redis_abstract"
-require "toggleable/logger_abstract"
-require "toggleable/feature_toggler"
-require "toggleable/base"
+# frozen_string_literal: true
 
+require 'toggleable/version'
+require 'toggleable/configuration'
+require 'toggleable/storage_abstract'
+require 'toggleable/logger_abstract'
+require 'toggleable/feature_toggler'
+require 'toggleable/base'
+
+# Toggleable is a gem for toggling purposes.
 module Toggleable
   class << self
     attr_accessor :configuration

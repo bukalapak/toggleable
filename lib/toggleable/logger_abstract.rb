@@ -1,9 +1,18 @@
-module Toggleable
-  class LoggerAbstract
-    ## the redis you provide must implement these methods
+# frozen_string_literal: true
 
-    def log(key:, value: ,actor:)
-      raise NotImplementedError.new("You must implement #{__method__.to_s}")
+module Toggleable
+  # Toggleable::LoggerAbstract describes the interface class for logger.
+  class LoggerAbstract
+    # the redis you provide must implement these methods
+
+    def log(_key:, _value:, _actor:)
+      raise NotImplementedError, "You must implement #{method_name}"
+    end
+
+    private
+
+    def method_name
+      caller_locations(1, 1)[0].label
     end
   end
 end

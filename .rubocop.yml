@@ -1,0 +1,57 @@
+AllCops:
+  TargetRubyVersion: 2.3
+  Exclude:
+    - Rakefile
+    - Gemfile
+    - bin/*
+    - '*.gemspec'
+    - spec/**/*.rb
+    - vendor/**/*
+
+Lint/HandleExceptions:
+  Enabled: true
+
+Lint/UnusedMethodArgument:
+  Enabled: false
+
+Metrics/LineLength:
+  Enabled: false
+
+Metrics/MethodLength:
+  Enabled: false
+
+Metrics/ClassLength:
+  Enabled: false
+
+Metrics/BlockLength:
+  Enabled: false
+
+Metrics/AbcSize:
+  Enabled: false
+
+Metrics/CyclomaticComplexity:
+  Enabled: false
+
+Metrics/PerceivedComplexity:
+  Enabled: false
+
+Layout/EmptyLinesAroundModuleBody:
+  Enabled: false
+
+Layout/EmptyLinesAroundClassBody:
+  Enabled: false
+
+Layout/EmptyLinesAroundBlockBody:
+  Enabled: false
+
+Layout/SpaceBeforeBlockBraces:
+  EnforcedStyle: no_space
+
+Style/AsciiComments:
+  Enabled: false
+
+Style/Semicolon:
+  AllowAsExpressionSeparator: true
+
+Naming/FileName:
+  Enabled: false
