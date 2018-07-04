@@ -6,6 +6,7 @@ AllCops:
     - bin/*
     - '*.gemspec'
     - spec/**/*.rb
+    - vendor/**/*
 
 Lint/HandleExceptions:
   Enabled: true
