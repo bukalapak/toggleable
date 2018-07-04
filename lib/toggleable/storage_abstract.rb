@@ -15,6 +15,10 @@ module Toggleable
       raise NotImplementedError.new("You must implement #{__method__.to_s}")
     end
 
+    def set_if_not_exist(_key, _value, _namespace: nil)
+      raise NotImplementedError.new("You must implement #{__method__.to_s}")
+    end
+
     def mass_set(*attrs, _namespace: nil)
       raise NotImplementedError.new("You must implement #{__method__.to_s}")
     end
