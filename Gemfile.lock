@@ -48,7 +48,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  bundler (~> 1.16)
+  bundler (~> 1.14)
   dotenv (>= 2.4.0)
   rake (~> 10.0)
   redis (~> 3.0)
