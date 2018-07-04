@@ -17,7 +17,6 @@ module Toggleable
       def active?
         return to_bool(toggle_active.to_s) unless toggle_active.nil?
 
-        Toggleable.configuration.storage.set_if_not_exist(key, DEFAULT_VALUE, namespace: Toggleable.configuration.namespace)
         DEFAULT_VALUE
       end
 

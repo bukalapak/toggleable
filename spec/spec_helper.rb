@@ -32,10 +32,6 @@ class SampleStorage < Toggleable::StorageAbstract
     storage.hset(namespace, key, value)
   end
 
-  def set_if_not_exist(key, value, namespace:)
-    storage.hsetnx(namespace, key, value)
-  end
-
   def mass_set(*attrs, namespace:)
     storage.hmset(namespace, *attrs)
   end
