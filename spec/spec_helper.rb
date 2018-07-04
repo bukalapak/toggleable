@@ -12,7 +12,32 @@ SimpleCov.start
 
 Dotenv.load
 
+## Sample implementation for storage
+class SampleStorage < Toggleable::StorageAbstract
+  attr_accessor :storage
 
+  def initialize
+    @storage = Redis.new(host: ENV['HOST'], port: ENV['PORT'])
+  end
+
+  def get(key, namespace:)
+    storage.hget(namespace, key)
+  end
+
+  def get_all(namespace:)
+    storage.hgetall(namespace)
+  end
+
+  def set(key, value, namespace:)
+    storage.hset(namespace, key, value)
+  end
+
+  def mass_set(*attrs, namespace:)
+    storage.hmset(namespace, *attrs)
+  end
+end
+
+## Sample implementation for logger
 class SampleLogger < Toggleable::LoggerAbstract
   attr_accessor :logger
 
@@ -25,10 +50,13 @@ class SampleLogger < Toggleable::LoggerAbstract
   end
 end
 
+## Initialize Toggleable
+storage = SampleStorage.new
 logger = SampleLogger.new
 
 Toggleable.configure do |t|
-  t.storage = Redis.new(host: ENV['HOST'], port: ENV['PORT'])
+  t.storage = storage
+  t.namespace = 'features'
   t.logger = logger
   t.expiration_time = 5.minutes
   t.use_memoization = false

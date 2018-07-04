@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    toggleable (0.1.4)
+    toggleable (0.1.5)
       activesupport (>= 4.0.0)
 
 GEM
@@ -35,6 +35,8 @@ GEM
       diff-lcs (>= 1.2.0, < 2.0)
       rspec-support (~> 3.7.0)
     rspec-support (3.7.1)
+    rspec_junit_formatter (0.4.1)
+      rspec-core (>= 2, < 4, != 2.12.0)
     simplecov (0.16.1)
       docile (~> 1.1)
       json (>= 1.8, < 3)
@@ -48,11 +50,12 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  bundler (~> 1.16)
+  bundler (~> 1.14)
   dotenv (>= 2.4.0)
   rake (~> 10.0)
   redis (~> 3.0)
   rspec (~> 3.0)
+  rspec_junit_formatter
   simplecov (>= 0.16.1)
   toggleable!
 
