@@ -1,14 +1,11 @@
 require 'spec_helper'
 require 'active_support/inflector'
+require 'pry'
 
 class SampleFeature
   include Toggleable::Base
 
   DESC = 'description'.freeze
-
-  def self.description
-    DESC
-  end
 end
 
 RSpec.describe Toggleable::Base, :type => :model do
@@ -22,8 +19,19 @@ RSpec.describe Toggleable::Base, :type => :model do
   it { is_expected.to respond_to(:key) }
   it { is_expected.to respond_to(:description) }
 
+  it { expect(subject.description).to eq('SampleFeature') }
+  it { expect(subject.active?).to be_falsy }
   it { expect(subject.key).to eq(subject.name.underscore) }
-  it { expect(subject.description).to eq('description') }
+  it do
+    # add description method to SampleFeature
+    SampleFeature.instance_eval do
+      def description
+        SampleFeature::DESC
+      end
+    end
+
+    expect(subject.description).to eq('description')
+  end
 
   context 'logic behavior' do
     let(:actor_id) { 1 }
@@ -43,5 +51,16 @@ RSpec.describe Toggleable::Base, :type => :model do
         expect(subject.active?).to be false
       end
     end
+
+    context 'wrong argument type for to bool' do
+      let(:wrong_args) { 'wrong args' }
+
+      before do
+        allow(subject).to receive(:toggle_active).and_return(wrong_args)
+      end
+
+      it { expect { subject.active? }.to raise_error(ArgumentError) }
+    end
+
   end
 end

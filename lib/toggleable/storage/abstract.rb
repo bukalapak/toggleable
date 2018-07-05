@@ -22,7 +22,7 @@ module Toggleable
       raise NotImplementedError, "You must implement #{method_name}"
     end
 
-    def mass_set(*_attrs, namespace: nil)
+    def mass_set(_mappings, namespace: nil)
       raise NotImplementedError, "You must implement #{method_name}"
     end
 

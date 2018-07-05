@@ -2,7 +2,7 @@ require 'spec_helper'
 
 RSpec.describe Toggleable::FeatureToggler, :type => :model do
 
-  context 'FeatureToggler class' do
+  context 'test using memory storage' do
     subject { described_class.instance }
 
     it { is_expected.to respond_to(:register) }

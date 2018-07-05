@@ -2,40 +2,16 @@
 $LOAD_PATH.push File.expand_path('../../lib', __FILE__)
 
 require 'simplecov'
+
+SimpleCov.formatter = SimpleCov::Formatter::HTMLFormatter
+SimpleCov.start
+
 require 'redis'
 require 'toggleable'
 require 'dotenv'
 require 'logger'
 
-SimpleCov.formatter = SimpleCov::Formatter::HTMLFormatter
-SimpleCov.start
-
 Dotenv.load
-
-## Sample implementation for storage
-class SampleStorage < Toggleable::StorageAbstract
-  attr_accessor :storage
-
-  def initialize
-    @storage = Redis.new(host: ENV['HOST'], port: ENV['PORT'])
-  end
-
-  def get(key, namespace:)
-    storage.hget(namespace, key)
-  end
-
-  def get_all(namespace:)
-    storage.hgetall(namespace)
-  end
-
-  def set(key, value, namespace:)
-    storage.hset(namespace, key, value)
-  end
-
-  def mass_set(*attrs, namespace:)
-    storage.hmset(namespace, *attrs)
-  end
-end
 
 ## Sample implementation for logger
 class SampleLogger < Toggleable::LoggerAbstract
@@ -51,11 +27,13 @@ class SampleLogger < Toggleable::LoggerAbstract
 end
 
 ## Initialize Toggleable
-storage = SampleStorage.new
+memory_storage = Toggleable::MemoryStore.new
+redis_instance = Redis.new(host: ENV['HOST'], port: ENV['PORT'])
+redis_storage = Toggleable::RedisStore.new(redis_instance)
 logger = SampleLogger.new
 
 Toggleable.configure do |t|
-  t.storage = storage
+  t.storage = memory_storage
   t.namespace = 'features'
   t.logger = logger
   t.expiration_time = 5.minutes

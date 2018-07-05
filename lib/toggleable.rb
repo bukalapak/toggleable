@@ -2,7 +2,7 @@
 
 require 'toggleable/version'
 require 'toggleable/configuration'
-require 'toggleable/storage_abstract'
+require 'toggleable/storage'
 require 'toggleable/logger_abstract'
 require 'toggleable/feature_toggler'
 require 'toggleable/base'
