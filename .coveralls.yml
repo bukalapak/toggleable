@@ -1,2 +1,6 @@
-COVERALLS_ENDPOINT=opencov.bukalapak.io
-COVERALLS_REPO_TOKEN=a0lpcEwvOFZ2ZmF0K3g3endvUjF5RWxBbmhRazlQZFYyN0Jka25TeQ==
+COVERALLS_ENDPOINT:
+  opencov.bukalapak.io
+COVERALLS_REPO_TOKEN:
+  a0lpcEwvOFZ2ZmF0K3g3endvUjF5RWxBbmhRazlQZFYyN0Jka25TeQ==
+repo_token:
+  a0lpcEwvOFZ2ZmF0K3g3endvUjF5RWxBbmhRazlQZFYyN0Jka25TeQ==
