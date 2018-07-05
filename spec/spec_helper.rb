@@ -1,9 +1,16 @@
 # encoding: UTF-8
+require 'coveralls'
+Coveralls.wear!
+
 $LOAD_PATH.push File.expand_path('../../lib', __FILE__)
 
 require 'simplecov'
 
-SimpleCov.formatter = SimpleCov::Formatter::HTMLFormatter
+SimpleCov.formatter = SimpleCov::Formatter::MultiFormatter[
+  SimpleCov::Formatter::HTMLFormatter,
+  Coveralls::SimpleCov::Formatter
+]
+
 SimpleCov.start
 
 require 'redis'
@@ -33,7 +40,6 @@ redis_storage = Toggleable::RedisStore.new(redis_instance)
 logger = SampleLogger.new
 
 Toggleable.configure do |t|
-  t.storage = memory_storage
   t.namespace = 'features'
   t.logger = logger
   t.expiration_time = 5.minutes

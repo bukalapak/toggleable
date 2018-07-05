@@ -8,9 +8,5 @@ module Toggleable
     attr_accessor :namespace ## optional, if you use certain namespace
     attr_accessor :logger ## optional, it will not log if not configured.
     attr_accessor :use_memoization ## set true to use memoization.
-
-    def initialize
-      @storage = Toggleable::StorageAbstract.new
-    end
   end
 end
