@@ -24,6 +24,4 @@ logger = SampleLogger.new
 
 Toggleable.configure do |t|
   t.logger = logger
-  t.expiration_time = 5.minutes
-  t.use_memoization = false
 end
