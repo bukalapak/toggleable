@@ -1,5 +1,6 @@
 # toggleable
 [![CircleCI](https://circleci.com/gh/bukalapak/toggleable.svg?style=svg)](https://circleci.com/gh/bukalapak/toggleable)
+[![codecov](https://codecov.io/gh/bukalapak/toggleable/branch/master/graph/badge.svg)](https://codecov.io/gh/bukalapak/toggleable)
 
 Gem for toggling tools.
 
@@ -85,9 +86,7 @@ This gem is tested against recent Ruby and ActiveSupport versions.
 
 ## Contributor
 
-[BUKALAPAK TEAM][bukalapak-git]
-
-[bukalapak-get]: https://github.com/bukalapak
+[BUKALAPAK TEAM](https://github.com/bukalapak/toggleable/graphs/contributors)
 
 ## Contributing
 
