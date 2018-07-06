@@ -1,12 +1,14 @@
 require 'spec_helper'
 require 'active_support/inflector'
-require 'pry'
 
 class SampleFeature
   include Toggleable::Base
 
   DESC = 'description'.freeze
 end
+
+redis_instance = Redis.new(host: ENV['HOST'], port: ENV['PORT'])
+redis_storage = Toggleable::RedisStore.new(redis_instance)
 
 RSpec.describe Toggleable::Base, :type => :model do
   subject { SampleFeature }
@@ -19,8 +21,22 @@ RSpec.describe Toggleable::Base, :type => :model do
   it { is_expected.to respond_to(:key) }
   it { is_expected.to respond_to(:description) }
 
+  describe 'active? before key exist should create the key also' do
+    context 'with memory store' do
+      it { expect(subject.active?).to be_falsy }
+    end
+
+    context 'with redis store' do
+      before do
+        allow(subject).to receive(:toggle_active).and_return(nil)
+        allow(Toggleable.configuration).to receive(:storage).and_return(redis_storage)
+      end
+
+      it { expect(subject.active?).to be_falsy }
+    end
+  end
+
   it { expect(subject.description).to eq('SampleFeature') }
-  it { expect(subject.active?).to be_falsy }
   it { expect(subject.key).to eq(subject.name.underscore) }
   it do
     # add description method to SampleFeature
@@ -33,14 +49,26 @@ RSpec.describe Toggleable::Base, :type => :model do
     expect(subject.description).to eq('description')
   end
 
-  context 'logic behavior' do
+  describe 'logic behavior' do
     let(:actor_id) { 1 }
 
     context 'activation' do
       it do
         expect(Toggleable.configuration.logger).to receive(:log).with(key: SampleFeature.key, value: true, actor: actor_id).and_return(true)
         subject.activate!(actor: actor_id)
-        expect(subject.active?).to be true
+        expect(subject.active?).to be_truthy
+      end
+    end
+
+    context 'activation with redis' do
+      before do
+        allow(Toggleable.configuration).to receive(:storage).and_return(redis_storage)
+      end
+
+      it do
+        expect(Toggleable.configuration.logger).to receive(:log).with(key: SampleFeature.key, value: true, actor: actor_id).and_return(true)
+        subject.activate!(actor: actor_id)
+        expect(subject.active?).to be_truthy
       end
     end
 
@@ -48,7 +76,45 @@ RSpec.describe Toggleable::Base, :type => :model do
       it do
         expect(Toggleable.configuration.logger).to receive(:log).with(key: SampleFeature.key, value: false, actor: actor_id).and_return(true)
         subject.deactivate!(actor: actor_id)
-        expect(subject.active?).to be false
+        expect(subject.active?).to be_falsy
+      end
+    end
+
+    context 'deactivation without namespace' do
+      before do
+        allow(Toggleable.configuration).to receive(:namespace).and_return(nil)
+      end
+
+      it do
+        expect(Toggleable.configuration.logger).to receive(:log).with(key: SampleFeature.key, value: false, actor: actor_id).and_return(true)
+        subject.deactivate!(actor: actor_id)
+        expect(subject.active?).to be_falsy
+      end
+    end
+
+    context 'processing class when inactive will do nothing' do
+      before do
+        subject.deactivate!
+      end
+
+      it do
+        subject.process do
+          subject.activate!
+        end
+        expect(subject.active?).to be_falsy
+      end
+    end
+
+    context 'processing class when active' do
+      before do
+        subject.activate!
+      end
+
+      it do
+        subject.process do
+          subject.deactivate!
+        end
+        expect(subject.active?).to be_falsy
       end
     end
 
@@ -61,6 +127,5 @@ RSpec.describe Toggleable::Base, :type => :model do
 
       it { expect { subject.active? }.to raise_error(ArgumentError) }
     end
-
   end
 end

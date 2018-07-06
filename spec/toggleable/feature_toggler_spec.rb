@@ -1,5 +1,8 @@
 require 'spec_helper'
 
+redis_instance = Redis.new(host: ENV['HOST'], port: ENV['PORT'])
+redis_storage = Toggleable::RedisStore.new(redis_instance)
+
 RSpec.describe Toggleable::FeatureToggler, :type => :model do
 
   context 'test using memory storage' do
@@ -32,6 +35,40 @@ RSpec.describe Toggleable::FeatureToggler, :type => :model do
     end
 
     describe '#mass_toggle!' do
+      let(:mapping_before) {
+        {
+          'key' => 'true',
+          'other_key' => 'false'
+        }
+      }
+
+      let(:mapping_after) {
+        {
+          'key' => 'true',
+          'other_key' => 'true'
+        }
+      }
+
+      let(:actor_id) { 1 }
+
+      before do
+        subject.register('key')
+        subject.register('other_key')
+        subject.mass_toggle!(mapping_before, actor: actor_id)
+      end
+
+      it do
+        expect(Toggleable.configuration.logger).to receive(:log).with(key: 'other_key', value: 'true', actor: actor_id).and_return(true)
+        subject.mass_toggle!(mapping_after, actor: actor_id)
+        expect(subject.available_features).to include(mapping_after)
+      end
+    end
+
+    describe '#mass_toggle! with redis' do
+      before do
+        allow(Toggleable.configuration).to receive(:storage).and_return(redis_storage)
+      end
+
       let(:mapping_before) {
         {
           'key' => 'true',

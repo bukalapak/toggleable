@@ -11,7 +11,9 @@ SimpleCov.formatter = SimpleCov::Formatter::MultiFormatter[
   Coveralls::SimpleCov::Formatter
 ]
 
-SimpleCov.start
+SimpleCov.start do
+  add_filter "/spec/"
+end
 
 require 'redis'
 require 'toggleable'
@@ -35,12 +37,9 @@ end
 
 ## Initialize Toggleable
 memory_storage = Toggleable::MemoryStore.new
-redis_instance = Redis.new(host: ENV['HOST'], port: ENV['PORT'])
-redis_storage = Toggleable::RedisStore.new(redis_instance)
 logger = SampleLogger.new
 
 Toggleable.configure do |t|
-  t.namespace = 'features'
   t.logger = logger
   t.expiration_time = 5.minutes
   t.use_memoization = false

@@ -22,7 +22,8 @@ module Toggleable
   def configure
     yield(configuration)
 
-    # set default storage using memory store if no storage was provided
-    Toggleable.configuration.storage ||= Toggleable::MemoryStore.new
+    # set default configuration for storage and namespace if none was provided
+    Toggleable.configuration.storage   ||= Toggleable::MemoryStore.new
+    Toggleable.configuration.namespace ||= 'toggleable'
   end
 end
