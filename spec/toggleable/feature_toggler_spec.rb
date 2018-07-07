@@ -18,23 +18,53 @@ RSpec.describe Toggleable::FeatureToggler, :type => :model do
     end
 
     describe '#available_features' do
-      let(:keys) {
-        {
-          'active_key' => 'true',
-          'inactive_key' => 'false',
-          'unavailable_key' => 'true'
+      context 'without memoize' do
+        let(:keys) {
+          {
+            'active_key' => 'true',
+            'inactive_key' => 'false',
+            'unavailable_key' => 'true'
+          }
         }
-      }
 
-      before do
-        allow(subject).to receive(:keys).and_return(keys)
-        allow(subject).to receive(:features).and_return(['active_key', 'inactive_key'])
+        before do
+          allow(subject).to receive(:keys).and_return(keys)
+          allow(subject).to receive(:features).and_return(['active_key', 'inactive_key'])
+        end
+
+        it { expect(subject.available_features).to eq({ 'active_key' => 'true', 'inactive_key' => 'false' }) }
       end
 
-      it { expect(subject.available_features).to eq({ 'active_key' => 'true', 'inactive_key' => 'false' }) }
+      context 'with memoize' do
+        let(:keys) {
+          {
+            'active_key' => 'true',
+            'inactive_key' => 'false',
+            'unavailable_key' => 'true'
+          }
+        }
+
+        let(:updated_keys) {
+          {
+            'active_key' => 'false',
+            'inactive_key' => 'true'
+          }
+        }
+
+        before do
+          Toggleable.configuration.storage.mass_set(keys, namespace: Toggleable.configuration.namespace)
+          allow(subject).to receive(:features).and_return(['active_key', 'inactive_key'])
+        end
+
+        it do
+          expect(subject.available_features(memoize: true)).to eq({ 'active_key' => 'true', 'inactive_key' => 'false' })
+          Toggleable.configuration.storage.mass_set(updated_keys, namespace: Toggleable.configuration.namespace)
+          expect(subject.available_features(memoize: true)).to eq({ 'active_key' => 'true', 'inactive_key' => 'false' })
+        end
+      end
     end
 
-    describe '#mass_toggle!' do
+    describe '#mass_toggle! with memory store' do
       let(:mapping_before) {
         {
           'key' => 'true',
