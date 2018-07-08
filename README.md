@@ -3,7 +3,7 @@
 [![codecov](https://codecov.io/gh/bukalapak/toggleable/branch/master/graph/badge.svg)](https://codecov.io/gh/bukalapak/toggleable)
 [![Maintainability](https://api.codeclimate.com/v1/badges/02e63a9f70c9c06ffed5/maintainability)](https://codeclimate.com/github/bukalapak/toggleable/maintainability)
 
-Gem for toggling tools.
+Gem that provides toggle functionality.
 
 ## Getting started
 
