@@ -17,8 +17,9 @@ module Toggleable
       features << key
     end
 
-    def available_features
-      keys.slice(*features)
+    def available_features(memoize: Toggleable.configuration.use_memoization)
+      available_features = memoize ? memoized_keys : keys
+      available_features.slice(*features)
     end
 
     def mass_toggle!(mapping, actor: nil)
@@ -38,6 +39,16 @@ module Toggleable
       else
         Toggleable.configuration.storage.get_all
       end
+    end
+
+    def memoized_keys
+      return @_memoized_keys if defined?(@_memoized_keys) && !read_expired?
+      @_last_read_at = Time.now.localtime
+      @_memoized_keys = Toggleable.configuration.storage.hgetall(NAMESPACE)
+    end
+
+    def read_expired?
+      @_last_read_at < Time.now.localtime - Toggleable.configuration.expiration_time
     end
 
     def log_changes(mapping, actor)
