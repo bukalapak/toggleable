@@ -2,7 +2,7 @@
 
 require 'toggleable/version'
 require 'toggleable/configuration'
-require 'toggleable/storage_abstract'
+require 'toggleable/storage'
 require 'toggleable/logger_abstract'
 require 'toggleable/feature_toggler'
 require 'toggleable/base'
@@ -20,6 +20,11 @@ module Toggleable
   end
 
   def configure
-    yield(configuration)
+    yield(configuration) if block_given?
+
+    # set default configuration for storage and namespace if none was provided
+    configuration.storage         ||= Toggleable::MemoryStore.new
+    configuration.namespace       ||= 'toggleable'
+    configuration.expiration_time ||= 5.minutes
   end
 end

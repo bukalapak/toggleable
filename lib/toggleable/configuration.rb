@@ -3,14 +3,10 @@
 module Toggleable
   # Toggleable::Configuration yields the configuration of toggleable.
   class Configuration
-    attr_accessor :expiration_time ## expiration time for memoization.
-    attr_accessor :storage ## storage used.
-    attr_accessor :namespace ## optional, if you use certain namespace
+    attr_accessor :expiration_time ## expiration time for memoization. default: 5 minutes
+    attr_accessor :storage ## storage used. default: memory store
+    attr_accessor :namespace ## required for prefixing the keys. default: `toggleable``
     attr_accessor :logger ## optional, it will not log if not configured.
-    attr_accessor :use_memoization ## set true to use memoization.
-
-    def initialize
-      @storage = Toggleable::StorageAbstract.new
-    end
+    attr_accessor :use_memoization ## set true to use memoization. default: false
   end
 end
