@@ -17,27 +17,30 @@ module Toggleable
       features << key
     end
 
-    def available_features
-      keys.slice(*features)
+    def available_features(memoize: Toggleable.configuration.use_memoization)
+      available_features = memoize ? memoized_keys : keys
+      available_features.slice(*features)
     end
 
     def mass_toggle!(mapping, actor: nil)
       log_changes(mapping, actor) if Toggleable.configuration.logger
-      if Toggleable.configuration.namespace
-        Toggleable.configuration.storage.mass_set(mapping.flatten, namespace: Toggleable.configuration.namespace)
-      else
-        Toggleable.configuration.storage.mass_set(mapping.flatten)
-      end
+      Toggleable.configuration.storage.mass_set(mapping, namespace: Toggleable.configuration.namespace)
     end
 
     private
 
     def keys
-      if Toggleable.configuration.namespace
-        Toggleable.configuration.storage.get_all(namespace: Toggleable.configuration.namespace)
-      else
-        Toggleable.configuration.storage.get_all
-      end
+      Toggleable.configuration.storage.get_all(namespace: Toggleable.configuration.namespace)
+    end
+
+    def memoized_keys
+      return @_memoized_keys if defined?(@_memoized_keys) && !read_expired?
+      @_last_read_at = Time.now.localtime
+      @_memoized_keys = Toggleable.configuration.storage.get_all(namespace: Toggleable.configuration.namespace)
+    end
+
+    def read_expired?
+      @_last_read_at < Time.now.localtime - Toggleable.configuration.expiration_time
     end
 
     def log_changes(mapping, actor)
