@@ -25,8 +25,6 @@ module Toggleable
                                           open_timeout: 2
       result = JSON.parse(resource.get)
       result['data']['status']
-    rescue
-      false
     end
 
     def available_features(memoize: Toggleable.configuration.use_memoization)
