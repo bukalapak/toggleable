@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 require 'singleton'
+require 'rest-client'
+require 'json'
 
 module Toggleable
   # Toggleable::FeatureToggler provides an instance to manage all toggleable keys.
@@ -15,6 +17,13 @@ module Toggleable
 
     def register(key)
       features << key
+    end
+
+    def get_toggle(key)
+      resource = RestClient::Resource.new("#{ENV['PALANCA_HOST']}/_internal/toggle_features/status?key=#{key}",
+                                          ENV['PALANCA_USERNAME'], ENV['PALANCA_PASSWORD'])
+      result = JSON.parse(resource.get)
+      result['data']['status']
     end
 
     def available_features(memoize: Toggleable.configuration.use_memoization)
