@@ -37,11 +37,11 @@ module Toggleable
       if Toggleable.configuration.toggle_fallback&.active?
         Toggleable.configuration.storage.mass_set(mapping, namespace: Toggleable.configuration.namespace)
       else
-        mappings[:actor] = actor
+        mapping[:actor] = actor
 
         @resource ||= RestClient::Resource.new("#{ENV['PALANCA_HOST']}/_internal/toggle_features/collections",
                                             ENV['PALANCA_BASIC_USER'], ENV['PALANCA_BASIC_PASSWORD'])
-        resource.put mappings.to_json, timeout: 5, open_timeout: 1
+        resource.put mapping.to_json, timeout: 5, open_timeout: 1
       end
     end
 
