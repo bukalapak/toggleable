@@ -20,10 +20,9 @@ module Toggleable
     end
 
     def get_key(key)
-      resource = RestClient::Resource.new "#{ENV['PALANCA_HOST']}/_internal/toggle_features/status?key=#{key}", ENV['PALANCA_USERNAME'], ENV['PALANCA_PASSWORD'],
-                                          timeout: 60,
-                                          open_timeout: 2
-      result = JSON.parse(resource.get)
+      resource = RestClient::Resource.new("#{ENV['PALANCA_HOST']}/_internal/toggle_features?key=#{key}",
+                                          ENV['PALANCA_BASIC_USER'], ENV['PALANCA_BASIC_PASSWORD'])
+      result = resource.get timeout: 5, open_timeout: 1
       result['data']['status']
     end
 
@@ -34,7 +33,15 @@ module Toggleable
 
     def mass_toggle!(mapping, actor: nil)
       log_changes(mapping, actor) if Toggleable.configuration.logger
-      Toggleable.configuration.storage.mass_set(mapping, namespace: Toggleable.configuration.namespace)
+      if Toggleable.configuration.toggle_fallback&.active?
+        Toggleable.configuration.storage.mass_set(mapping, namespace: Toggleable.configuration.namespace)
+      else
+        mappings[:actor] = actor
+
+        @resource ||= RestClient::Resource.new("#{ENV['PALANCA_HOST']}/_internal/toggle_features/collections",
+                                            ENV['PALANCA_BASIC_USER'], ENV['PALANCA_BASIC_PASSWORD'])
+        resource.put mappings.to_json, timeout: 5, open_timeout: 1
+      end
     end
 
     private
