@@ -23,6 +23,7 @@ module Toggleable
       resource = RestClient::Resource.new("#{ENV['PALANCA_HOST']}/_internal/toggle_features?key=#{key}",
                                           ENV['PALANCA_BASIC_USER'], ENV['PALANCA_BASIC_PASSWORD'])
       result = resource.get timeout: 5, open_timeout: 1
+      result = ::JSON.parse(result)
       result['data']['status']
     end
 
