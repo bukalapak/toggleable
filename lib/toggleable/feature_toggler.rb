@@ -19,7 +19,7 @@ module Toggleable
       features << key
     end
 
-    def get_toggle(key)
+    def get_key(key)
       resource = RestClient::Resource.new "#{ENV['PALANCA_HOST']}/_internal/toggle_features/status?key=#{key}", ENV['PALANCA_USERNAME'], ENV['PALANCA_PASSWORD'],
                                           timeout: 60,
                                           open_timeout: 2
