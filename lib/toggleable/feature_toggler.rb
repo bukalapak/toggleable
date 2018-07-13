@@ -20,10 +20,13 @@ module Toggleable
     end
 
     def get_toggle(key)
-      resource = RestClient::Resource.new("#{ENV['PALANCA_HOST']}/_internal/toggle_features/status?key=#{key}",
-                                          ENV['PALANCA_USERNAME'], ENV['PALANCA_PASSWORD'])
+      resource = RestClient::Resource.new "#{ENV['PALANCA_HOST']}/_internal/toggle_features/status?key=#{key}", ENV['PALANCA_USERNAME'], ENV['PALANCA_PASSWORD'],
+                                          timeout: 60,
+                                          open_timeout: 2
       result = JSON.parse(resource.get)
       result['data']['status']
+    rescue
+      false
     end
 
     def available_features(memoize: Toggleable.configuration.use_memoization)
