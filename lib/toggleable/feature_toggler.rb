@@ -9,6 +9,8 @@ module Toggleable
   class FeatureToggler
     include Singleton
 
+    MAX_ATTEMPT = 3
+
     attr_reader :features
 
     def initialize
@@ -20,11 +22,26 @@ module Toggleable
     end
 
     def get_key(key)
-      resource = RestClient::Resource.new("#{ENV['PALANCA_HOST']}/_internal/toggle_features?key=#{key}",
-                                          ENV['PALANCA_BASIC_USER'], ENV['PALANCA_BASIC_PASSWORD'])
-      result = resource.get timeout: 5, open_timeout: 1
-      result = ::JSON.parse(result)
-      result['data']['status']
+      response = ''
+      attempt = 1
+      url = "#{ENV['PALANCA_HOST']}/_internal/toggle_features?key=#{key}"
+      resource = RestClient::Resource.new(url, ENV['PALANCA_BASIC_USER'], ENV['PALANCA_BASIC_PASSWORD'])
+
+      while response.empty?
+        begin
+          response = resource.get timeout: 5, open_timeout: 1
+          response = ::JSON.parse(response)
+          result = response['data']['status']
+        rescue StandardError => _e
+          if attempt >= MAX_ATTEMPT
+            Toggleable.configuration.logger.error(message: "GET #{key} TIMEOUT")
+            result = false
+            break
+          end
+          attempt += 1
+        end
+      end
+      result
     end
 
     def available_features(memoize: Toggleable.configuration.use_memoization)
@@ -33,16 +50,27 @@ module Toggleable
     end
 
     def mass_toggle!(mapping, actor: nil)
-      log_changes(mapping, actor) if Toggleable.configuration.logger
-      if Toggleable.configuration.toggle_fallback&.active?
-        Toggleable.configuration.storage.mass_set(mapping, namespace: Toggleable.configuration.namespace)
-      else
-        payload = { mappings: mapping, actor: actor }.to_json
+      Toggleable.configuration.storage.mass_set(mapping, namespace: Toggleable.configuration.namespace)
+      return if Toggleable.configuration.toggle_fallback&.active?
 
-        @resource ||= RestClient::Resource.new("#{ENV['PALANCA_HOST']}/_internal/toggle_features/collections",
-                                            ENV['PALANCA_BASIC_USER'], ENV['PALANCA_BASIC_PASSWORD'])
-        @resource.put payload, timeout: 5, open_timeout: 1
+      response = ''
+      attempt = 1
+      url = "#{ENV['PALANCA_HOST']}/_internal/toggle_features/collections"
+      payload = { mappings: mapping, actor: actor }.to_json
+      @resource ||= RestClient::Resource.new(url, ENV['PALANCA_BASIC_USER'], ENV['PALANCA_BASIC_PASSWORD'])
+
+      while response.empty?
+        begin
+          response = @resource.put payload, timeout: 5, open_timeout: 1
+        rescue StandardError => e
+          if attempt >= MAX_ATTEMPT
+            Toggleable.configuration.logger.error(message: 'MASS TOGGLE TIMEOUT')
+            raise e
+          end
+          attempt += 1
+        end
       end
+      log_changes(mapping, actor) if Toggleable.configuration.logger
     end
 
     private
