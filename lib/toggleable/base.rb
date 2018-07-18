@@ -51,13 +51,13 @@ module Toggleable
       def toggle_key(value, actor)
         Toggleable.configuration.storage.set(key, value, namespace: Toggleable.configuration.namespace)
         Toggleable.configuration.logger&.log(key: key, value: value, actor: actor)
-        Toggleable::FeatureToggler.instance.toggle_key(key, value, actor) if Toggleable.configuration.toggle_client&.active?
+        Toggleable::FeatureToggler.instance.toggle_key(key, value, actor) if Toggleable.configuration.toggle_client&.safe_constantize&.active?
       end
 
       def toggle_active
         return @_toggle_active if defined?(@_toggle_active) && !read_expired? && Toggleable.configuration.use_memoization
         @_last_read_at = Time.now.localtime
-        @_toggle_active = if Toggleable.configuration.toggle_client&.active?
+        @_toggle_active = if Toggleable.configuration.toggle_client&.safe_constantize&.active?
                             Toggleable::FeatureToggler.instance.get_key(key)
                           else
                             Toggleable.configuration.storage.get(key, namespace: Toggleable.configuration.namespace)
