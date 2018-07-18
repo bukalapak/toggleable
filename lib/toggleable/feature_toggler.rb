@@ -22,6 +22,10 @@ module Toggleable
     end
 
     def get_key(key)
+      @_toggle_active ||= {}
+      return @_toggle_active[key] if !@_toggle_active[key].nil? && !read_key_expired?(key)
+
+      @_last_key_read_at[key] = Time.now.localtime
       response = ''
       attempt = 1
       url = "#{ENV['PALANCA_HOST']}/_internal/toggle_features?key=#{key}"
@@ -31,17 +35,17 @@ module Toggleable
         begin
           response = resource.get timeout: 5, open_timeout: 1
           response = ::JSON.parse(response)
-          result = response['data']['status']
+          @_toggle_active[key] = response['data']['status']
         rescue StandardError => _e
           if attempt >= MAX_ATTEMPT
             Toggleable.configuration.logger.error(message: "GET #{key} TIMEOUT")
-            result = false
+            @_toggle_active[key] = false
             break
           end
           attempt += 1
         end
       end
-      result
+      @_toggle_active[key]
     end
 
     def toggle_key(key, value, actor)
@@ -100,13 +104,18 @@ module Toggleable
     end
 
     def memoized_keys
-      return @_memoized_keys if defined?(@_memoized_keys) && !read_expired?
+      return @_memoized_keys if defined?(@_memoized_keys) && !read_all_keys_expired?
       @_last_read_at = Time.now.localtime
       @_memoized_keys = Toggleable.configuration.storage.get_all(namespace: Toggleable.configuration.namespace)
     end
 
-    def read_expired?
+    def read_all_keys_expired?
       @_last_read_at < Time.now.localtime - Toggleable.configuration.expiration_time
+    end
+
+    def read_key_expired?(key)
+      @_last_key_read_at ||= {}
+      @_last_key_read_at[key] < Time.now.localtime - Toggleable.configuration.expiration_time
     end
 
     def log_changes(mapping, actor)
