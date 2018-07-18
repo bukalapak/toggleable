@@ -19,6 +19,7 @@ module Toggleable
 
     def get_key(key)
       @_toggle_active ||= {}
+      @_last_key_read_at ||= {}
       return @_toggle_active[key] if !@_toggle_active[key].nil? && !read_key_expired?(key)
 
       @_last_key_read_at[key] = Time.now.localtime
@@ -56,7 +57,6 @@ module Toggleable
     end
 
     def read_key_expired?(key)
-      @_last_key_read_at ||= {}
       @_last_key_read_at[key] < Time.now.localtime - Toggleable.configuration.expiration_time
     end
 
