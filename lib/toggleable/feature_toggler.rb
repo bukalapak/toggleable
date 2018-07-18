@@ -24,6 +24,7 @@ module Toggleable
 
     def get_key(key)
       @_toggle_active ||= {}
+      @_last_key_read_at ||= {}
       return @_toggle_active[key] if !@_toggle_active[key].nil? && !read_key_expired?(key)
 
       @_last_key_read_at[key] = Time.now.localtime
@@ -59,6 +60,7 @@ module Toggleable
       while response.empty?
         begin
           response = @resource.put payload, timeout: 5, open_timeout: 1
+          Toggleable.configuration.logger&.log(key: key, value: value, actor: actor)
         rescue StandardError => e
           if attempt >= MAX_ATTEMPT
             Toggleable.configuration.logger.error(message: "TOGGLE #{key} TIMEOUT")
@@ -115,7 +117,6 @@ module Toggleable
     end
 
     def read_key_expired?(key)
-      @_last_key_read_at ||= {}
       @_last_key_read_at[key] < Time.now.localtime - Toggleable.configuration.expiration_time
     end
 
