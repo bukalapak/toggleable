@@ -22,9 +22,7 @@ RSpec.describe Toggleable::FeatureToggler, :type => :model do
         let(:keys) {
           {
             'active_key' => 'true',
-            'inactive_key' => 'false',
-            'unavailable_key' => 'true'
-          }
+            'inactive_key' => 'false'          }
         }
 
         before do
@@ -39,9 +37,7 @@ RSpec.describe Toggleable::FeatureToggler, :type => :model do
         let(:keys) {
           {
             'active_key' => 'true',
-            'inactive_key' => 'false',
-            'unavailable_key' => 'true'
-          }
+            'inactive_key' => 'false'          }
         }
 
         let(:updated_keys) {

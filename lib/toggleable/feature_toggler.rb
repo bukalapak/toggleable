@@ -17,9 +17,21 @@ module Toggleable
       features << key
     end
 
+    def get_key(key)
+      @_toggle_active ||= {}
+      return @_toggle_active[key] if !@_toggle_active[key].nil? && !read_key_expired?(key)
+
+      @_last_key_read_at[key] = Time.now.localtime
+      @_toggle_active[key] = Toggleable.configuration.storage.get(key, namespace: Toggleable.configuration.namespace)
+    end
+
+    def toggle_key(key, value, actor)
+      Toggleable.configuration.logger&.log(key: key, value: value, actor: actor)
+      Toggleable.configuration.storage.set(key, value, namespace: Toggleable.configuration.namespace)
+    end
+
     def available_features(memoize: Toggleable.configuration.use_memoization)
       available_features = memoize ? memoized_keys : keys
-      available_features.slice(*features)
     end
 
     def mass_toggle!(mapping, actor: nil)
@@ -34,13 +46,18 @@ module Toggleable
     end
 
     def memoized_keys
-      return @_memoized_keys if defined?(@_memoized_keys) && !read_expired?
+      return @_memoized_keys if defined?(@_memoized_keys) && !read_all_keys_expired?
       @_last_read_at = Time.now.localtime
       @_memoized_keys = Toggleable.configuration.storage.get_all(namespace: Toggleable.configuration.namespace)
     end
 
-    def read_expired?
+    def read_all_keys_expired?
       @_last_read_at < Time.now.localtime - Toggleable.configuration.expiration_time
+    end
+
+    def read_key_expired?(key)
+      @_last_key_read_at ||= {}
+      @_last_key_read_at[key] < Time.now.localtime - Toggleable.configuration.expiration_time
     end
 
     def log_changes(mapping, actor)
