@@ -44,19 +44,40 @@ module Toggleable
       result
     end
 
+    def toggle_key(key, value, actor)
+      response = ''
+      attempt = 1
+      url = "#{ENV['PALANCA_HOST']}/_internal/toggle_features"
+      payload = { key: key, status: value, user_id: actor }.to_json
+      @resource ||= RestClient::Resource.new(url, ENV['PALANCA_BASIC_USER'], ENV['PALANCA_BASIC_PASSWORD'])
+
+      while response.empty?
+        begin
+          response = @resource.put payload, timeout: 5, open_timeout: 1
+        rescue StandardError => e
+          if attempt >= MAX_ATTEMPT
+            Toggleable.configuration.logger.error(message: "TOGGLE #{key} TIMEOUT")
+            raise e
+          end
+          attempt += 1
+        end
+      end
+    end
+
     def available_features(memoize: Toggleable.configuration.use_memoization)
       available_features = memoize ? memoized_keys : keys
       available_features.slice(*features)
     end
 
     def mass_toggle!(mapping, actor: nil)
+      log_changes(mapping, actor) if Toggleable.configuration.logger
       Toggleable.configuration.storage.mass_set(mapping, namespace: Toggleable.configuration.namespace)
-      return if Toggleable.configuration.toggle_fallback&.active?
+      return unless Toggleable.configuration.toggle_client&.active?
 
       response = ''
       attempt = 1
       url = "#{ENV['PALANCA_HOST']}/_internal/toggle_features/collections"
-      payload = { mappings: mapping, actor: actor }.to_json
+      payload = { mappings: mapping, user_id: actor }.to_json
       @resource ||= RestClient::Resource.new(url, ENV['PALANCA_BASIC_USER'], ENV['PALANCA_BASIC_PASSWORD'])
 
       while response.empty?
@@ -70,7 +91,6 @@ module Toggleable
           attempt += 1
         end
       end
-      log_changes(mapping, actor) if Toggleable.configuration.logger
     end
 
     private
