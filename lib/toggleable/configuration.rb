@@ -8,6 +8,5 @@ module Toggleable
     attr_accessor :namespace ## required for prefixing the keys. default: `toggleable``
     attr_accessor :logger ## optional, it will not log if not configured.
     attr_accessor :use_memoization ## set true to use memoization. default: false
-    attr_accessor :toggle_client
   end
 end

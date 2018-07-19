@@ -78,8 +78,6 @@ module Toggleable
 
     def mass_toggle!(mapping, actor: nil)
       log_changes(mapping, actor) if Toggleable.configuration.logger
-      Toggleable.configuration.storage.mass_set(mapping, namespace: Toggleable.configuration.namespace)
-      return unless Toggleable.configuration.toggle_client&.safe_constantize&.active?
 
       response = ''
       attempt = 1
