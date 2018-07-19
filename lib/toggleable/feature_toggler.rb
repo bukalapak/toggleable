@@ -32,7 +32,7 @@ module Toggleable
     end
 
     def available_features(memoize: Toggleable.configuration.use_memoization)
-      available_features = memoize ? memoized_keys : keys
+      _available_features = memoize ? memoized_keys : keys
     end
 
     def mass_toggle!(mapping, actor: nil)
