@@ -18,7 +18,8 @@ module Toggleable
     # it will generate these methods into included class.
     module ClassMethods
       def active?
-        return to_bool(toggle_active.to_s) unless toggle_active.nil?
+        toggle_status = toggle_active
+        return to_bool(toggle_status.to_s) unless toggle_status.nil?
 
         # Lazily register the key
         Toggleable.configuration.storage.set_if_not_exist(key, DEFAULT_VALUE, namespace: Toggleable.configuration.namespace)
