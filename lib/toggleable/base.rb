@@ -18,7 +18,8 @@ module Toggleable
     # it will generate these methods into included class.
     module ClassMethods
       def active?
-        return to_bool(toggle_active.to_s) unless toggle_active.nil?
+        toggle_status = toggle_active
+        return to_bool(toggle_status.to_s) unless toggle_status.nil?
 
         # Lazily register the key
         Toggleable.configuration.storage.set_if_not_exist(key, DEFAULT_VALUE, namespace: Toggleable.configuration.namespace)
@@ -49,14 +50,14 @@ module Toggleable
       private
 
       def toggle_key(value, actor)
+        Toggleable::FeatureToggler.instance.toggle_key(key, value, actor)
         Toggleable.configuration.logger&.log(key: key, value: value, actor: actor)
-        Toggleable.configuration.storage.set(key, value, namespace: Toggleable.configuration.namespace)
       end
 
       def toggle_active
         return @_toggle_active if defined?(@_toggle_active) && !read_expired? && Toggleable.configuration.use_memoization
         @_last_read_at = Time.now.localtime
-        @_toggle_active = Toggleable.configuration.storage.get(key, namespace: Toggleable.configuration.namespace)
+        @_toggle_active = Toggleable::FeatureToggler.instance.get_key(key)
       end
 
       def read_expired?
