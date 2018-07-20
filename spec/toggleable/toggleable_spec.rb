@@ -117,15 +117,5 @@ RSpec.describe Toggleable::Base, :type => :model do
         expect(subject.active?).to be_falsy
       end
     end
-
-    context 'wrong argument type for to bool' do
-      let(:wrong_args) { 'wrong args' }
-
-      before do
-        allow(subject).to receive(:toggle_active).and_return(wrong_args)
-      end
-
-      it { expect { subject.active? }.to raise_error(ArgumentError) }
-    end
   end
 end
