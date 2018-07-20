@@ -5,12 +5,7 @@ require 'simplecov'
 
 SimpleCov.start do
   add_filter '/spec/'
-end
-
-require 'codecov'
-
-SimpleCov.start do
-  add_filter '/spec/'
+  add_filter '/lib/toggleable/storage'
 end
 
 require 'codecov'

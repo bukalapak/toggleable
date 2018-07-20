@@ -19,7 +19,7 @@ module Toggleable
     module ClassMethods
       def active?
         toggle_status = toggle_active
-        return to_bool(toggle_status.to_s) unless toggle_status.nil?
+        return toggle_status.to_s == 'true' unless toggle_status.nil?
 
         # Lazily register the key
         Toggleable.configuration.storage.set_if_not_exist(key, DEFAULT_VALUE, namespace: Toggleable.configuration.namespace)
@@ -62,12 +62,6 @@ module Toggleable
 
       def read_expired?
         @_last_read_at < Time.now.localtime - Toggleable.configuration.expiration_time
-      end
-
-      def to_bool(value)
-        return true if value =~ /^(true|t|yes|y|1)$/i
-        return false if value.empty? || value =~ /^(false|f|no|n|0)$/i
-        raise ArgumentError, "invalid value for Boolean: \"#{value}\""
       end
     end
   end
