@@ -123,5 +123,30 @@ RSpec.describe Toggleable::FeatureToggler, :type => :model do
         expect(subject.available_features).to include(mapping_after)
       end
     end
+
+    describe '#feature toggler get/toggle key' do
+      let(:key) { 'test/get_key'}
+      let(:actor_id) { 1 }
+
+      context 'without memoization' do
+        it do
+          expect(subject.get_key(key)).to be_falsy
+          subject.toggle_key(key, true, actor_id)
+          expect(subject.get_key(key)).to be_truthy
+        end
+      end
+
+      context 'with memoization' do
+        before do
+          allow(Toggleable.configuration).to receive(:use_memoization).and_return(true)
+        end
+
+        it do
+          expect(subject.get_key(key)).to be_truthy
+          subject.toggle_key(key, false, actor_id)
+          expect(subject.get_key(key)).to be_truthy
+        end
+      end
+    end
   end
 end

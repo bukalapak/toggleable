@@ -20,7 +20,7 @@ module Toggleable
     def get_key(key)
       @_toggle_active ||= {}
       @_last_key_read_at ||= {}
-      return @_toggle_active[key] if !@_toggle_active[key].nil? && !read_key_expired?(key)
+      return @_toggle_active[key] if Toggleable.configuration.use_memoization && !@_toggle_active[key].nil? && !read_key_expired?(key)
 
       @_last_key_read_at[key] = Time.now.localtime
       @_toggle_active[key] = Toggleable.configuration.storage.get(key, namespace: Toggleable.configuration.namespace)
