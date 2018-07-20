@@ -3,7 +3,7 @@
 require 'active_support/concern'
 require 'active_support/inflector'
 require 'active_support/core_ext/numeric/time'
-require 'pry'
+
 module Toggleable
   # Toggleable::Base provides basic functionality for toggling into a class.
   module Base
