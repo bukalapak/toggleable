@@ -22,4 +22,5 @@ SimpleCov.formatter =
     SimpleCov::Formatter::HTMLFormatter
   end
 
+require 'webmock/rspec'
 require 'class_initializer'

@@ -30,8 +30,8 @@ module Toggleable
       @_last_key_read_at[key] = Time.now.localtime
       response = ''
       attempt = 1
-      url = "#{ENV['PALANCA_HOST']}/_internal/toggle_features?key=#{key}"
-      resource = RestClient::Resource.new(url, ENV['PALANCA_BASIC_USER'], ENV['PALANCA_BASIC_PASSWORD'])
+      url = "#{Toggleable.configuration.palanca_host}/_internal/toggle_features?key=#{key}"
+      resource = RestClient::Resource.new(url, Toggleable.configuration.palanca_user, Toggleable.configuration.palanca_password)
 
       while response.empty?
         begin
@@ -53,9 +53,9 @@ module Toggleable
     def toggle_key(key, value, actor)
       response = ''
       attempt = 1
-      url = "#{ENV['PALANCA_HOST']}/_internal/toggle_features"
+      url = "#{Toggleable.configuration.palanca_host}/_internal/toggle_features"
       payload = { key: key, status: value, user_id: actor }.to_json
-      @resource ||= RestClient::Resource.new(url, ENV['PALANCA_BASIC_USER'], ENV['PALANCA_BASIC_PASSWORD'])
+      @resource ||= RestClient::Resource.new(url, Toggleable.configuration.palanca_user, Toggleable.configuration.palanca_password)
 
       while response.empty?
         begin
@@ -81,10 +81,9 @@ module Toggleable
 
       response = ''
       attempt = 1
-      url = "#{ENV['PALANCA_HOST']}/_internal/toggle_features/collections"
+      url = "#{Toggleable.configuration.palanca_host}/_internal/toggle_features/collections"
       payload = { mappings: mapping, user_id: actor }.to_json
-      @resource ||= RestClient::Resource.new(url, ENV['PALANCA_BASIC_USER'], ENV['PALANCA_BASIC_PASSWORD'])
-
+      @resource ||= RestClient::Resource.new(url, Toggleable.configuration.palanca_user, Toggleable.configuration.palanca_password)
       while response.empty?
         begin
           response = @resource.put payload, timeout: 5, open_timeout: 1

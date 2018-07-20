@@ -21,15 +21,15 @@ RSpec.describe Toggleable::Base, :type => :model do
   it { is_expected.to respond_to(:key) }
   it { is_expected.to respond_to(:description) }
 
+  before(:each) do
+    allow(Toggleable::FeatureToggler.instance).to receive(:toggle_key).and_return(true)
+  end
+
   describe 'active? before key exist should create the key also' do
     context 'with memory store' do
-      it { expect(subject.active?).to be_falsy }
-    end
-
-    context 'with redis store' do
       before do
         allow(subject).to receive(:toggle_active).and_return(nil)
-        allow(Toggleable.configuration).to receive(:storage).and_return(redis_storage)
+        allow(Toggleable::FeatureToggler.instance).to receive(:get_key).and_return(false)
       end
 
       it { expect(subject.active?).to be_falsy }
@@ -53,16 +53,8 @@ RSpec.describe Toggleable::Base, :type => :model do
     let(:actor_id) { 1 }
 
     context 'activation' do
-      it do
-        expect(Toggleable.configuration.logger).to receive(:log).with(key: SampleFeature.key, value: true, actor: actor_id).and_return(true)
-        subject.activate!(actor: actor_id)
-        expect(subject.active?).to be_truthy
-      end
-    end
-
-    context 'activation with redis' do
       before do
-        allow(Toggleable.configuration).to receive(:storage).and_return(redis_storage)
+        allow(Toggleable::FeatureToggler.instance).to receive(:get_key).and_return(true)
       end
 
       it do
@@ -73,6 +65,10 @@ RSpec.describe Toggleable::Base, :type => :model do
     end
 
     context 'deactivation' do
+      before do
+        allow(Toggleable::FeatureToggler.instance).to receive(:get_key).and_return(false)
+      end
+
       it do
         expect(Toggleable.configuration.logger).to receive(:log).with(key: SampleFeature.key, value: false, actor: actor_id).and_return(true)
         subject.deactivate!(actor: actor_id)
@@ -82,6 +78,7 @@ RSpec.describe Toggleable::Base, :type => :model do
 
     context 'deactivation without namespace' do
       before do
+        allow(Toggleable::FeatureToggler.instance).to receive(:get_key).and_return(false)
         allow(Toggleable.configuration).to receive(:namespace).and_return(nil)
       end
 
@@ -95,6 +92,7 @@ RSpec.describe Toggleable::Base, :type => :model do
     context 'processing class when inactive will do nothing' do
       before do
         subject.deactivate!
+        allow(Toggleable::FeatureToggler.instance).to receive(:get_key).and_return(false)
       end
 
       it do
@@ -107,6 +105,7 @@ RSpec.describe Toggleable::Base, :type => :model do
 
     context 'processing class when active' do
       before do
+        allow(Toggleable::FeatureToggler.instance).to receive(:get_key).and_return(false)
         subject.activate!
       end
 
