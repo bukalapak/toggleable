@@ -30,7 +30,7 @@ module Toggleable
       @_last_key_read_at[key] = Time.now.localtime
       response = ''
       attempt = 1
-      url = "#{Toggleable.configuration.palanca_host}/_internal/toggle_features?key=#{key}"
+      url = "#{Toggleable.configuration.palanca_host}/_internal/toggle-features?key=#{key}"
       resource = RestClient::Resource.new(url, Toggleable.configuration.palanca_user, Toggleable.configuration.palanca_password)
 
       while response.empty?
@@ -53,7 +53,7 @@ module Toggleable
     def toggle_key(key, value, actor)
       response = ''
       attempt = 1
-      url = "#{Toggleable.configuration.palanca_host}/_internal/toggle_features"
+      url = "#{Toggleable.configuration.palanca_host}/_internal/toggle-features"
       payload = { key: key, status: value, user_id: actor }.to_json
       @resource ||= RestClient::Resource.new(url, Toggleable.configuration.palanca_user, Toggleable.configuration.palanca_password)
 
@@ -81,7 +81,7 @@ module Toggleable
 
       response = ''
       attempt = 1
-      url = "#{Toggleable.configuration.palanca_host}/_internal/toggle_features/collections"
+      url = "#{Toggleable.configuration.palanca_host}/_internal/toggle-features/collections"
       payload = { mappings: mapping, user_id: actor }.to_json
       @resource ||= RestClient::Resource.new(url, Toggleable.configuration.palanca_user, Toggleable.configuration.palanca_password)
       while response.empty?

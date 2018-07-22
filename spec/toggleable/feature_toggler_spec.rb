@@ -65,7 +65,7 @@ RSpec.describe Toggleable::FeatureToggler, :type => :model do
     end
 
     before do
-      stub_request(:put, "http://localhost:8027/_internal/toggle_features/collections").to_return(status: 200, body: 'success')
+      stub_request(:put, "http://localhost:8027/_internal/toggle-features/collections").to_return(status: 200, body: 'success')
     end
 
     describe '#mass_toggle! with memory store' do
