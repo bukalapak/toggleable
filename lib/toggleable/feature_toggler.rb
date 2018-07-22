@@ -7,6 +7,8 @@ module Toggleable
   class FeatureToggler
     include Singleton
 
+    DEFAULT_VALUE = false
+
     attr_reader :features
 
     def initialize
@@ -20,10 +22,12 @@ module Toggleable
     def get_key(key)
       @_toggle_active ||= {}
       @_last_key_read_at ||= {}
-      return @_toggle_active[key] if Toggleable.configuration.use_memoization && !@_toggle_active[key].nil? && !read_key_expired?(key)
+      toggle_status = toggle_active(key)
+      return toggle_status unless toggle_status.nil?
 
-      @_last_key_read_at[key] = Time.now.localtime
-      @_toggle_active[key] = Toggleable.configuration.storage.get(key, namespace: Toggleable.configuration.namespace)
+      # Lazily register the key
+      Toggleable.configuration.storage.set_if_not_exist(key, DEFAULT_VALUE, namespace: Toggleable.configuration.namespace)
+      DEFAULT_VALUE
     end
 
     def toggle_key(key, value, actor)
@@ -44,6 +48,13 @@ module Toggleable
 
     def keys
       Toggleable.configuration.storage.get_all(namespace: Toggleable.configuration.namespace)
+    end
+
+    def toggle_active(key)
+      return @_toggle_active[key] if Toggleable.configuration.use_memoization && @_toggle_active.key?(key) && !read_key_expired?(key)
+
+      @_last_key_read_at[key] = Time.now.localtime
+      @_toggle_active[key] = Toggleable.configuration.storage.get(key, namespace: Toggleable.configuration.namespace)
     end
 
     def memoized_keys
