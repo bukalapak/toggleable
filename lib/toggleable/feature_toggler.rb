@@ -30,7 +30,7 @@ module Toggleable
       @_last_key_read_at[key] = Time.now.localtime
       response = ''
       attempt = 1
-      url = "#{Toggleable.configuration.palanca_host}/_internal/toggle-features?key=#{key}"
+      url = "#{Toggleable.configuration.palanca_host}/_internal/toggle-features?feature=#{key}"
       resource = RestClient::Resource.new(url, Toggleable.configuration.palanca_user, Toggleable.configuration.palanca_password)
 
       while response.empty?

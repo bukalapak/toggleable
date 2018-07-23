@@ -64,6 +64,21 @@ RSpec.describe Toggleable::FeatureToggler, :type => :model do
       end
     end
 
+    describe 'get key' do
+      let(:key) { 'sample_key' }
+      let(:data) { { status: true } }
+      let(:response) { { data: data }.to_json }
+
+      context 'successful' do
+        before do
+          stub_request(:get, "http://localhost:8027/_internal/toggle-features?feature=#{key}")
+                      .to_return(status: 200, body: response)
+        end
+
+        it { expect(subject.get_key(key)).to be_truthy }
+      end
+    end
+
     before do
       stub_request(:put, "http://localhost:8027/_internal/toggle-features/collections").to_return(status: 200, body: 'success')
     end
