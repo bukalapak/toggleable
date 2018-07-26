@@ -34,6 +34,16 @@ RSpec.describe Toggleable::Base, :type => :model do
 
       it { expect(subject.active?).to be_falsy }
     end
+
+    context 'raise error' do
+      before do
+        allow(Toggleable.configuration.storage).to receive(:get).and_raise(Redis::CannotConnectError)
+      end
+
+      it do
+        expect(subject.active?).to be_falsy
+      end
+    end
   end
 
   it { expect(subject.description).to eq('SampleFeature') }

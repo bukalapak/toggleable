@@ -55,6 +55,8 @@ module Toggleable
 
       @_last_key_read_at[key] = Time.now.localtime
       @_toggle_active[key] = Toggleable.configuration.storage.get(key, namespace: Toggleable.configuration.namespace)
+    rescue StandardError
+      false
     end
 
     def memoized_keys

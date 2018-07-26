@@ -147,6 +147,16 @@ RSpec.describe Toggleable::FeatureToggler, :type => :model do
           expect(subject.get_key(key)).to be_truthy
         end
       end
+
+      context 'raise error' do
+        before do
+          allow(Toggleable.configuration.storage).to receive(:get).and_raise(Redis::CannotConnectError)
+        end
+
+        it do
+          expect(subject.get_key(key)).to be_falsy
+        end
+      end
     end
   end
 end
