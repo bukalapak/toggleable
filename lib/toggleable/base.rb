@@ -50,6 +50,7 @@ module Toggleable
       private
 
       def toggle_key(value, actor)
+        Toggleable.configuration.storage.set(key, value, namespace: Toggleable.configuration.namespace)
         Toggleable::FeatureToggler.instance.toggle_key(key, value, actor)
         Toggleable.configuration.logger&.log(key: key, value: value, actor: actor)
       end

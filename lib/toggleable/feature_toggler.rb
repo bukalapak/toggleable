@@ -41,8 +41,7 @@ module Toggleable
         rescue StandardError => _e
           if attempt >= MAX_ATTEMPT
             Toggleable.configuration.logger.error(message: "GET #{key} TIMEOUT")
-            @_toggle_active[key] = false
-            break
+            raise e
           end
           attempt += 1
         end
@@ -78,7 +77,11 @@ module Toggleable
 
     def mass_toggle!(mapping, actor: nil)
       log_changes(mapping, actor) if Toggleable.configuration.logger
+      Toggleable.configuration.storage.mass_set(mapping, namespace: Toggleable.configuration.namespace)
+      mass_set_palanca!(mapping, actor: actor)
+    end
 
+    def mass_set_palanca!(mapping, actor: nil)
       response = ''
       attempt = 1
       url = "#{Toggleable.configuration.palanca_host}/_internal/toggle-features/collections"
