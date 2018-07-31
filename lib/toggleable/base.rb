@@ -23,6 +23,7 @@ module Toggleable
 
         # Lazily register the key
         Toggleable.configuration.storage.set_if_not_exist(key, DEFAULT_VALUE, namespace: Toggleable.configuration.namespace)
+        Toggleable::FeatureToggler.instance.toggle_key(key, DEFAULT_VALUE)
         DEFAULT_VALUE
       end
 
@@ -51,7 +52,7 @@ module Toggleable
 
       def toggle_key(value, actor)
         Toggleable.configuration.storage.set(key, value, namespace: Toggleable.configuration.namespace)
-        Toggleable::FeatureToggler.instance.toggle_key(key, value, actor)
+        Toggleable::FeatureToggler.instance.toggle_key(key, value, actor: actor)
         Toggleable.configuration.logger&.log(key: key, value: value, actor: actor)
       end
 

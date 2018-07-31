@@ -49,7 +49,7 @@ module Toggleable
       @_toggle_active[key]
     end
 
-    def toggle_key(key, value, actor)
+    def toggle_key(key, value, actor: nil)
       response = ''
       attempt = 1
       url = "#{Toggleable.configuration.palanca_host}/_internal/toggle-features"
@@ -84,12 +84,12 @@ module Toggleable
     def mass_set_palanca!(mapping, actor: nil)
       response = ''
       attempt = 1
-      url = "#{Toggleable.configuration.palanca_host}/_internal/toggle-features/collections"
+      url = "#{Toggleable.configuration.palanca_host}/_internal/toggle-features/bulk-update"
       payload = { mappings: mapping, user_id: actor }.to_json
       @resource ||= RestClient::Resource.new(url, Toggleable.configuration.palanca_user, Toggleable.configuration.palanca_password)
       while response.empty?
         begin
-          response = @resource.put payload, timeout: 2, open_timeout: 1
+          response = @resource.post payload, timeout: 2, open_timeout: 1
         rescue StandardError => e
           if attempt >= MAX_ATTEMPT
             Toggleable.configuration.logger.error(message: 'MASS TOGGLE TIMEOUT')
