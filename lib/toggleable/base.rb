@@ -59,7 +59,7 @@ module Toggleable
       def toggle_active
         return @_toggle_active if defined?(@_toggle_active) && !read_expired? && Toggleable.configuration.use_memoization
         @_last_read_at = Time.now.localtime
-        @_toggle_active = Toggleable::FeatureToggler.instance.get_key(key)
+        @_toggle_active = Toggleable.configuration.storage.get(key, namespace: Toggleable.configuration.namespace)
       end
 
       def read_expired?

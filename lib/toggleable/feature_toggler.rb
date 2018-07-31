@@ -38,7 +38,7 @@ module Toggleable
           response = resource.get timeout: 2, open_timeout: 1
           response = ::JSON.parse(response)
           @_toggle_active[key] = response['data']['status']
-        rescue StandardError => _e
+        rescue StandardError => e
           if attempt >= MAX_ATTEMPT
             Toggleable.configuration.logger.error(message: "GET #{key} TIMEOUT")
             raise e
