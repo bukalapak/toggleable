@@ -41,7 +41,7 @@ RSpec.describe Toggleable::Base, :type => :model do
       end
 
       it do
-        expect(subject.active?).to be_falsy
+        expect { (subject.active?) }.to raise_exception(Redis::CannotConnectError)
       end
     end
   end

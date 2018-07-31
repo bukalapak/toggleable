@@ -36,7 +36,8 @@ module Toggleable
     end
 
     def available_features(memoize: Toggleable.configuration.use_memoization)
-      _available_features = memoize ? memoized_keys : keys
+      available_features = memoize ? memoized_keys : keys
+      available_features.sort_by{ |k, _v| k }.to_h
     end
 
     def mass_toggle!(mapping, actor: nil)
