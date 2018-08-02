@@ -53,7 +53,7 @@ module Toggleable
       response = ''
       attempt = 1
       url = "#{Toggleable.configuration.palanca_host}/_internal/toggle-features"
-      payload = { key: key, status: value, user_id: actor }.to_json
+      payload = { feature: key, status: value, user_id: actor }.to_json
       resource = RestClient::Resource.new(url, Toggleable.configuration.palanca_user, Toggleable.configuration.palanca_password)
 
       while response.empty?
