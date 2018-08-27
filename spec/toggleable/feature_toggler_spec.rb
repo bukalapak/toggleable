@@ -81,19 +81,12 @@ RSpec.describe Toggleable::FeatureToggler, :type => :model do
 
     before do
       stub_request(:post, "http://localhost:8027/_internal/toggle-features/bulk-update").to_return(status: 200, body: 'success')
+      stub_request(:get, "http://localhost:5858/notify_toggle?keys=other_key&values=true").to_return(status: 200, body: 'success')
     end
 
     describe '#mass_toggle! with memory store' do
-      let(:mapping_before) {
-        {
-          'key' => 'true',
-          'other_key' => 'false'
-        }
-      }
-
       let(:mapping_after) {
         {
-          'key' => 'true',
           'other_key' => 'true'
         }
       }
@@ -103,7 +96,6 @@ RSpec.describe Toggleable::FeatureToggler, :type => :model do
       before do
         subject.register('key')
         subject.register('other_key')
-        allow(subject).to receive(:available_features).and_return(mapping_before)
       end
 
       it do
@@ -113,20 +105,8 @@ RSpec.describe Toggleable::FeatureToggler, :type => :model do
     end
 
     describe '#mass_toggle! with redis' do
-      before do
-        allow(Toggleable.configuration).to receive(:storage).and_return(redis_storage)
-      end
-
-      let(:mapping_before) {
-        {
-          'key' => 'true',
-          'other_key' => 'false'
-        }
-      }
-
       let(:mapping_after) {
         {
-          'key' => 'true',
           'other_key' => 'true'
         }
       }
@@ -134,9 +114,14 @@ RSpec.describe Toggleable::FeatureToggler, :type => :model do
       let(:actor_id) { 1 }
 
       before do
+        allow(Toggleable.configuration).to receive(:storage).and_return(redis_storage)
+        allow_any_instance_of(RestClient::Resource).to receive(:get).and_raise(StandardError)
+      end
+
+
+      before do
         subject.register('key')
         subject.register('other_key')
-        allow(subject).to receive(:available_features).and_return(mapping_before)
       end
 
       it do
