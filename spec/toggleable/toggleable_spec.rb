@@ -23,8 +23,6 @@ RSpec.describe Toggleable::Base, :type => :model do
 
   before(:each) do
     allow(Toggleable::FeatureToggler.instance).to receive(:toggle_key).and_return(true)
-    stub_request(:get, "http://localhost:5858/notify_toggle?keys=sample_feature&values=true").to_return(status: 200, body: 'success')
-    stub_request(:get, "http://localhost:5858/notify_toggle?keys=sample_feature&values=false").to_return(status: 200, body: 'success')
   end
 
   describe 'active? before key exist should create the key also' do
