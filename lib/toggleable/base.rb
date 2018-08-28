@@ -54,6 +54,7 @@ module Toggleable
         Toggleable.configuration.storage.set(key, value, namespace: Toggleable.configuration.namespace)
         Toggleable::FeatureToggler.instance.toggle_key(key, value, actor: actor)
         Toggleable.configuration.logger&.log(key: key, value: value, actor: actor)
+        notify_changes(key, value) if Toggleable.configuration.notify_endpoint
       end
 
       def toggle_active
@@ -64,6 +65,13 @@ module Toggleable
 
       def read_expired?
         @_last_read_at < Time.now.localtime - Toggleable.configuration.expiration_time
+      end
+
+      def notify_changes(toggles, values)
+        url = "#{Toggleable.configuration.notify_endpoint}/notify_toggle?keys=#{toggles}&values=#{values}"
+        RestClient::Resource.new(url).get timeout: 2, open_timeout: 1
+      rescue StandardError
+        nil
       end
     end
   end
