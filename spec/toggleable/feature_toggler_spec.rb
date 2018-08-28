@@ -84,16 +84,8 @@ RSpec.describe Toggleable::FeatureToggler, :type => :model do
     end
 
     describe '#mass_toggle! with memory store' do
-      let(:mapping_before) {
-        {
-          'key' => 'true',
-          'other_key' => 'false'
-        }
-      }
-
       let(:mapping_after) {
         {
-          'key' => 'true',
           'other_key' => 'true'
         }
       }
@@ -103,7 +95,6 @@ RSpec.describe Toggleable::FeatureToggler, :type => :model do
       before do
         subject.register('key')
         subject.register('other_key')
-        allow(subject).to receive(:available_features).and_return(mapping_before)
       end
 
       it do
@@ -117,16 +108,8 @@ RSpec.describe Toggleable::FeatureToggler, :type => :model do
         allow(Toggleable.configuration).to receive(:storage).and_return(redis_storage)
       end
 
-      let(:mapping_before) {
-        {
-          'key' => 'true',
-          'other_key' => 'false'
-        }
-      }
-
       let(:mapping_after) {
         {
-          'key' => 'true',
           'other_key' => 'true'
         }
       }
@@ -136,7 +119,6 @@ RSpec.describe Toggleable::FeatureToggler, :type => :model do
       before do
         subject.register('key')
         subject.register('other_key')
-        allow(subject).to receive(:available_features).and_return(mapping_before)
       end
 
       it do
