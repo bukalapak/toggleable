@@ -1,6 +1,7 @@
-# frozen_string_literal: true
+# frozen_string_literal: false
 
 require 'singleton'
+require 'rest-client'
 
 module Toggleable
   # Toggleable::FeatureToggler provides an instance to manage all toggleable keys.
@@ -75,11 +76,22 @@ module Toggleable
     end
 
     def log_changes(mapping, actor)
-      previous_values = available_features
+      toggles = ''
+      values = ''
       mapping.each do |key, val|
-        next if previous_values[key].to_s == val.to_s
         Toggleable.configuration.logger.log(key: key, value: val, actor: actor)
+        toggles.concat("#{key},")
+        values.concat("#{val},")
       end
+
+      notify_changes(toggles[0...-1], values[0...-1]) if Toggleable.configuration.notify_host
+    end
+
+    def notify_changes(toggles, values)
+      url = "#{Toggleable.configuration.notify_host}/notify_toggle?keys=#{toggles}&values=#{values}"
+      RestClient::Resource.new(url).get timeout: 2, open_timeout: 1
+    rescue StandardError
+      nil
     end
   end
 end

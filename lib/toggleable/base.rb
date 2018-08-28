@@ -3,6 +3,7 @@
 require 'active_support/concern'
 require 'active_support/inflector'
 require 'active_support/core_ext/numeric/time'
+require 'rest-client'
 
 module Toggleable
   # Toggleable::Base provides basic functionality for toggling into a class.
@@ -52,6 +53,14 @@ module Toggleable
       def toggle_key(value, actor)
         Toggleable.configuration.logger&.log(key: key, value: value, actor: actor)
         Toggleable.configuration.storage.set(key, value, namespace: Toggleable.configuration.namespace)
+        notify_change(key, value) if Toggleable.configuration.notify_host
+      end
+
+      def notify_change(toggle, value)
+        url = "#{Toggleable.configuration.notify_host}/notify_toggle?keys=#{toggle}&values=#{value}"
+        RestClient::Resource.new(url).get timeout: 2, open_timeout: 1
+      rescue StandardError
+        nil
       end
 
       def toggle_active
