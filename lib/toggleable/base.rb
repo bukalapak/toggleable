@@ -53,12 +53,13 @@ module Toggleable
       def toggle_key(value, actor)
         Toggleable.configuration.logger&.log(key: key, value: value, actor: actor)
         Toggleable.configuration.storage.set(key, value, namespace: Toggleable.configuration.namespace)
-        notify_change(key, value, actor) if Toggleable.configuration.notify_host && !Toggleable.configuration.blacklisted_notif_key&.include?(key)
+        notify_changes({ key => value.to_s }, actor) if Toggleable.configuration.notify_host && !Toggleable.configuration.blacklisted_notif_key&.include?(key)
       end
 
-      def notify_change(toggle, value, actor)
-        url = "#{Toggleable.configuration.notify_host}/_internal/notify-toggles?keys=#{toggle}&values=#{value}&actor=#{actor}"
-        RestClient::Resource.new(url).get timeout: 2, open_timeout: 1
+      def notify_changes(mapping, actor)
+        url = "#{Toggleable.configuration.notify_host}/_internal/toggle-features/bulk-notify"
+        payload = { mappings: mapping, user_id: actor.to_s }.to_json
+        RestClient::Resource.new(url).post payload, timeout: 2, open_timeout: 1
       rescue StandardError
         nil
       end

@@ -34,7 +34,7 @@ module Toggleable
     def toggle_key(key, value, actor)
       Toggleable.configuration.logger&.log(key: key, value: value, actor: actor)
       Toggleable.configuration.storage.set(key, value, namespace: Toggleable.configuration.namespace)
-      notify_changes(key, value, actor) if Toggleable.configuration.notify_host && !Toggleable.configuration.blacklisted_notif_key&.include?(key)
+      notify_changes({ key => value.to_s }, actor) if Toggleable.configuration.notify_host && !Toggleable.configuration.blacklisted_notif_key&.include?(key)
     end
 
     def available_features(memoize: Toggleable.configuration.use_memoization)
@@ -77,20 +77,17 @@ module Toggleable
     end
 
     def log_changes(mapping, actor)
-      toggles = ''
-      values = ''
       mapping.each do |key, val|
         Toggleable.configuration.logger.log(key: key, value: val, actor: actor)
-        toggles.concat("#{key},")
-        values.concat("#{val},")
       end
 
-      notify_changes(toggles[0...-1], values[0...-1], actor) if Toggleable.configuration.notify_host
+      notify_changes(mapping, actor) if Toggleable.configuration.notify_host
     end
 
-    def notify_changes(toggles, values, actor)
-      url = "#{Toggleable.configuration.notify_host}/_internal/notify-toggles?keys=#{toggles}&values=#{values}&actor=#{actor}"
-      RestClient::Resource.new(url).get timeout: 2, open_timeout: 1
+    def notify_changes(mapping, actor)
+      url = "#{Toggleable.configuration.notify_host}/_internal/toggle-features/bulk-notify"
+      payload = { mappings: mapping, user_id: actor.to_s }.to_json
+      RestClient::Resource.new(url).post payload, timeout: 2, open_timeout: 1
     rescue StandardError
       nil
     end
