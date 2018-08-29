@@ -53,7 +53,7 @@ module Toggleable
       def toggle_key(value, actor)
         Toggleable.configuration.logger&.log(key: key, value: value, actor: actor)
         Toggleable.configuration.storage.set(key, value, namespace: Toggleable.configuration.namespace)
-        notify_change(key, value, actor) if Toggleable.configuration.notify_host
+        notify_change(key, value, actor) if Toggleable.configuration.notify_host && !Toggleable.configuration.blacklisted_notif_key&.include?(key)
       end
 
       def notify_change(toggle, value, actor)
