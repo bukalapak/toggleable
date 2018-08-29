@@ -53,11 +53,11 @@ module Toggleable
       def toggle_key(value, actor)
         Toggleable.configuration.logger&.log(key: key, value: value, actor: actor)
         Toggleable.configuration.storage.set(key, value, namespace: Toggleable.configuration.namespace)
-        notify_change(key, value) if Toggleable.configuration.notify_host
+        notify_change(key, value, actor) if Toggleable.configuration.notify_host
       end
 
-      def notify_change(toggle, value)
-        url = "#{Toggleable.configuration.notify_host}/notify_toggle?keys=#{toggle}&values=#{value}"
+      def notify_change(toggle, value, actor)
+        url = "#{Toggleable.configuration.notify_host}/notify_toggle?keys=#{toggle}&values=#{value}&actor=#{actor}"
         RestClient::Resource.new(url).get timeout: 2, open_timeout: 1
       rescue StandardError
         nil

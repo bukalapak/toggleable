@@ -84,11 +84,11 @@ module Toggleable
         values.concat("#{val},")
       end
 
-      notify_changes(toggles[0...-1], values[0...-1]) if Toggleable.configuration.notify_host
+      notify_changes(toggles[0...-1], values[0...-1], actor) if Toggleable.configuration.notify_host
     end
 
-    def notify_changes(toggles, values)
-      url = "#{Toggleable.configuration.notify_host}/notify_toggle?keys=#{toggles}&values=#{values}"
+    def notify_changes(toggles, values, actor)
+      url = "#{Toggleable.configuration.notify_host}/notify_toggle?keys=#{toggles}&values=#{values}&actor=#{actor}"
       RestClient::Resource.new(url).get timeout: 2, open_timeout: 1
     rescue StandardError
       nil
