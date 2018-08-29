@@ -89,7 +89,7 @@ module Toggleable
     end
 
     def notify_changes(toggles, values, actor)
-      url = "#{Toggleable.configuration.notify_host}/notify_toggle?keys=#{toggles}&values=#{values}&actor=#{actor}"
+      url = "#{Toggleable.configuration.notify_host}/_internal/notify-toggles?keys=#{toggles}&values=#{values}&actor=#{actor}"
       RestClient::Resource.new(url).get timeout: 2, open_timeout: 1
     rescue StandardError
       nil
