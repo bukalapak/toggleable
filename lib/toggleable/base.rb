@@ -23,7 +23,7 @@ module Toggleable
 
         # Lazily register the key
         Toggleable.configuration.storage.set_if_not_exist(key, DEFAULT_VALUE, namespace: Toggleable.configuration.namespace)
-        Toggleable::FeatureToggler.instance.toggle_key(key, DEFAULT_VALUE, 'key initialization') if Toggleable.configuration.enable_palanca
+        Toggleable::FeatureToggler.instance.toggle_key(key, DEFAULT_VALUE, actor: 'key initialization') if Toggleable.configuration.enable_palanca
         DEFAULT_VALUE
       end
 
