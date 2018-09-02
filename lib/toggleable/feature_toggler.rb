@@ -59,7 +59,6 @@ module Toggleable
       while response.empty?
         begin
           response = resource.put payload, timeout: 2, open_timeout: 1
-          Toggleable.configuration.logger&.log(key: key, value: value, actor: actor)
         rescue StandardError => e
           if attempt >= MAX_ATTEMPT
             Toggleable.configuration.logger.error(message: "TOGGLE #{key} TIMEOUT")
@@ -75,13 +74,13 @@ module Toggleable
       available_features.slice(*features)
     end
 
-    def mass_toggle!(mapping, actor: nil)
+    def mass_toggle!(mapping, actor:, email:)
       log_changes(mapping, actor) if Toggleable.configuration.logger
       Toggleable.configuration.storage.mass_set(mapping, namespace: Toggleable.configuration.namespace)
-      mass_set_palanca!(mapping, actor: actor)
+      mass_set_palanca!(mapping, actor: email) if Toggleable.configuration.enable_palanca
     end
 
-    def mass_set_palanca!(mapping, actor: nil)
+    def mass_set_palanca!(mapping, actor:)
       response = ''
       attempt = 1
       url = "#{Toggleable.configuration.palanca_host}/_internal/toggle-features/bulk-update"

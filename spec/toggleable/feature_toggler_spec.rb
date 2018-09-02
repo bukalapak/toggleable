@@ -90,7 +90,8 @@ RSpec.describe Toggleable::FeatureToggler, :type => :model do
         }
       }
 
-      let(:actor_id) { 1 }
+      let(:actor_id)    { 1 }
+      let(:actor_email) { 'admin@toggle.com' }
 
       before do
         subject.register('key')
@@ -99,7 +100,7 @@ RSpec.describe Toggleable::FeatureToggler, :type => :model do
 
       it do
         expect(Toggleable.configuration.logger).to receive(:log).with(key: 'other_key', value: 'true', actor: actor_id).and_return(true)
-        subject.mass_toggle!(mapping_after, actor: actor_id)
+        subject.mass_toggle!(mapping_after, actor: actor_id, email: actor_email)
       end
     end
 
@@ -114,7 +115,8 @@ RSpec.describe Toggleable::FeatureToggler, :type => :model do
         }
       }
 
-      let(:actor_id) { 1 }
+      let(:actor_id)    { 1 }
+      let(:actor_email) { 'admin@toggle.com' }
 
       before do
         subject.register('key')
@@ -123,7 +125,7 @@ RSpec.describe Toggleable::FeatureToggler, :type => :model do
 
       it do
         expect(Toggleable.configuration.logger).to receive(:log).with(key: 'other_key', value: 'true', actor: actor_id).and_return(true)
-        subject.mass_toggle!(mapping_after, actor: actor_id)
+        subject.mass_toggle!(mapping_after, actor: actor_id, email: actor_email)
       end
     end
   end

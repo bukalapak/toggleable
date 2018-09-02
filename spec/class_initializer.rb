@@ -26,4 +26,5 @@ Toggleable.configure do |t|
   t.logger = logger
   t.palanca_host = 'localhost:8027'
   t.use_memoization = false
+  t.enable_palanca = true
 end

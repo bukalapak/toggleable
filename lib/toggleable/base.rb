@@ -23,16 +23,16 @@ module Toggleable
 
         # Lazily register the key
         Toggleable.configuration.storage.set_if_not_exist(key, DEFAULT_VALUE, namespace: Toggleable.configuration.namespace)
-        Toggleable::FeatureToggler.instance.toggle_key(key, DEFAULT_VALUE)
+        Toggleable::FeatureToggler.instance.toggle_key(key, DEFAULT_VALUE) if Toggleable.configuration.enable_palanca
         DEFAULT_VALUE
       end
 
-      def activate!(actor: nil)
-        toggle_key(true, actor)
+      def activate!(actor: nil, email: nil)
+        toggle_key(true, actor, email)
       end
 
-      def deactivate!(actor: nil)
-        toggle_key(false, actor)
+      def deactivate!(actor: nil, email: nil)
+        toggle_key(false, actor, email)
       end
 
       def key
@@ -50,10 +50,10 @@ module Toggleable
 
       private
 
-      def toggle_key(value, actor)
+      def toggle_key(value, actor, email)
         Toggleable.configuration.storage.set(key, value, namespace: Toggleable.configuration.namespace)
-        Toggleable::FeatureToggler.instance.toggle_key(key, value, actor: actor)
         Toggleable.configuration.logger&.log(key: key, value: value, actor: actor)
+        Toggleable::FeatureToggler.instance.toggle_key(key, value, actor: (email || actor)) if Toggleable.configuration.enable_palanca
       end
 
       def toggle_active
