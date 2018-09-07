@@ -22,8 +22,8 @@ module Toggleable
         return toggle_status.to_s == 'true' unless toggle_status.nil?
 
         # Lazily register the key
-        Toggleable.configuration.storage.set_if_not_exist(key, DEFAULT_VALUE, namespace: Toggleable.configuration.namespace)
-        Toggleable::FeatureToggler.instance.toggle_key(key, DEFAULT_VALUE, actor: 'key initialization') if Toggleable.configuration.enable_palanca
+        set_status = Toggleable.configuration.storage.set_if_not_exist(key, DEFAULT_VALUE, namespace: Toggleable.configuration.namespace)
+        Toggleable::FeatureToggler.instance.toggle_key(key, DEFAULT_VALUE, actor: 'key initialization') if Toggleable.configuration.enable_palanca && set_status
         DEFAULT_VALUE
       end
 
