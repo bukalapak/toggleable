@@ -89,7 +89,6 @@ module Toggleable
       Toggleable.configuration.notify_host && !Toggleable.configuration.blacklisted_notif_key&.include?(key) && (prev != value.to_s)
     end
 
-
     def notify_changes(mapping, actor)
       url = "#{Toggleable.configuration.notify_host}/_internal/toggle-features/bulk-notify"
       payload = { mappings: mapping, user_id: actor.to_s }.to_json
