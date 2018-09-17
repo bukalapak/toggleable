@@ -32,9 +32,11 @@ module Toggleable
     end
 
     def toggle_key(key, value, actor)
+      prev = Toggleable.configuration.storage.get(key, namespace: Toggleable.configuration.namespace)
+
       Toggleable.configuration.logger&.log(key: key, value: value, actor: actor)
       Toggleable.configuration.storage.set(key, value, namespace: Toggleable.configuration.namespace)
-      notify_changes({ key => value.to_s }, actor) if should_notify?(key, value)
+      notify_changes({ key => value.to_s }, actor) if should_notify? && (prev != value.to_s)
     end
 
     def available_features(memoize: Toggleable.configuration.use_memoization)
@@ -84,9 +86,8 @@ module Toggleable
       notify_changes(mapping, actor) if Toggleable.configuration.notify_host
     end
 
-    def should_notify?(key, value)
-      prev = Toggleable.configuration.storage.get(key, namespace: Toggleable.configuration.namespace)
-      Toggleable.configuration.notify_host && !Toggleable.configuration.blacklisted_notif_key&.include?(key) && (prev != value.to_s)
+    def should_notify?
+      Toggleable.configuration.notify_host && !Toggleable.configuration.blacklisted_notif_key&.include?(key)
     end
 
     def notify_changes(mapping, actor)
