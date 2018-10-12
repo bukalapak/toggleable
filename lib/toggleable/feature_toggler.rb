@@ -47,10 +47,9 @@ module Toggleable
     def mass_toggle!(mapping, actor: nil)
       log_changes(mapping, actor) if Toggleable.configuration.logger
 
-      unless mapping.empty?
-        Toggleable.configuration.storage.mass_set(mapping, namespace: Toggleable.configuration.namespace)
-        notify_changes(mapping, actor) if Toggleable.configuration.notify_host
-      end
+      return if mapping.empty?
+      Toggleable.configuration.storage.mass_set(mapping, namespace: Toggleable.configuration.namespace)
+      notify_changes(mapping, actor) if Toggleable.configuration.notify_host
     end
 
     private
@@ -83,7 +82,7 @@ module Toggleable
     end
 
     def log_changes(mapping, actor)
-      previous_mapping = self.available_features(memoize: false)
+      previous_mapping = available_features(memoize: false)
       mapping.each do |key, val|
         previous_mapping[key] != val.to_s ? Toggleable.configuration.logger.log(key: key, value: val, actor: actor) : mapping.delete(key)
       end

@@ -88,6 +88,7 @@ RSpec.describe Toggleable::FeatureToggler, :type => :model do
 
       let(:mapping_after) {
         {
+          'logged_key' => 'true',
           'other_key' => 'true'
         }
       }
@@ -100,7 +101,7 @@ RSpec.describe Toggleable::FeatureToggler, :type => :model do
       end
 
       it do
-        expect(Toggleable.configuration.logger).to receive(:log).with(key: 'other_key', value: 'true', actor: actor_id).and_return(true)
+        expect(Toggleable.configuration.logger).to receive(:log).with(key: 'logged_key', value: 'true', actor: actor_id).and_return(true)
         subject.mass_toggle!(mapping_after, actor: actor_id)
         expect(subject.available_features).to include(mapping_after)
       end
