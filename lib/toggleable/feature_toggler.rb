@@ -79,8 +79,13 @@ module Toggleable
     end
 
     def log_changes(mapping, actor)
+      previous_mapping = self.available_features(memoize: false)
       mapping.each do |key, val|
-        Toggleable.configuration.logger.log(key: key, value: val, actor: actor)
+        if previous_mapping[key] != val.to_s
+          Toggleable.configuration.logger.log(key: key, value: val, actor: actor)
+        else
+          mapping.delete(key)
+        end
       end
 
       notify_changes(mapping, actor) if Toggleable.configuration.notify_host
