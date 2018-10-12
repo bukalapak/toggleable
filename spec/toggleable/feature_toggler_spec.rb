@@ -84,20 +84,18 @@ RSpec.describe Toggleable::FeatureToggler, :type => :model do
     describe '#mass_toggle! with redis' do
       before do
         allow(Toggleable.configuration).to receive(:storage).and_return(redis_storage)
+        redis_instance.del(Toggleable.configuration.namespace)
       end
 
       let(:mapping_after) {
         {
-          'logged_key' => 'true',
-          'other_key' => 'true'
-        }
+          'logged_key' => 'true'        }
       }
 
       let(:actor_id) { 1 }
 
       before do
-        subject.register('key')
-        subject.register('other_key')
+        subject.register('logged_key')
       end
 
       it do
