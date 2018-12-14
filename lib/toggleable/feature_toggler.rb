@@ -10,7 +10,7 @@ module Toggleable
   class FeatureToggler
     include Singleton
 
-    MAX_ATTEMPT = 3
+    RETRIABLE_METHODS = %i[delete get patch post put].freeze
 
     attr_reader :features
 
@@ -25,28 +25,21 @@ module Toggleable
     def get_key(key)
       @_toggle_active ||= {}
       @_last_key_read_at ||= {}
-      return @_toggle_active[key] if !@_toggle_active[key].nil? && !read_key_expired?(key)
+      return @_toggle_active[key] if !@_toggle_active[key].nil? && !read_key_expired?(key) && Toggleable.configuration.use_memoization
 
       @_last_key_read_at[key] = Time.now.localtime
-      result = ''
-      attempt = 1
       url = "/_internal/toggle-features?feature=#{key}"
 
-      while result.empty?
-        begin
-          response = connection.get url do |req|
-            req.options.timeout = 0.2
-            req.options.open_timeout = 1
-          end
-          result = ::JSON.parse(response.body)
-          @_toggle_active[key] = result['data']['status']
-        rescue Faraday::ConnectionFailed, Faraday::TimeoutError, Faraday::Error => e
-          if attempt >= MAX_ATTEMPT
-            Toggleable.configuration.logger.error(message: "GET #{key} TIMEOUT")
-            raise e
-          end
-          attempt += 1
+      begin
+        response = connection.get url do |req|
+          req.options.timeout = 0.2
+          req.options.open_timeout = 1
         end
+        result = ::JSON.parse(response.body)
+        @_toggle_active[key] = result['data']['status']
+      rescue Faraday::ConnectionFailed, Faraday::TimeoutError, Faraday::Error => e
+        Toggleable.configuration.logger.error(message: "GET #{key} TIMEOUT")
+        raise e
       end
       @_toggle_active[key]
     end
@@ -57,22 +50,16 @@ module Toggleable
       url = '/_internal/toggle-features'
       payload = { feature: key, status: value, user_id: actor }.to_json
 
-      while result.empty?
-        begin
-          response = connection.put url do |req|
-            req.headers['Content-Type'] = 'application/json'
-            req.body = payload
-            req.options.timeout = 0.5
-            req.options.open_timeout = 1
-          end
-          result = response.body
-        rescue Faraday::ConnectionFailed, Faraday::TimeoutError, Faraday::Error => e
-          if attempt >= MAX_ATTEMPT
-            Toggleable.configuration.logger.error(message: "TOGGLE #{key} TIMEOUT")
-            raise e
-          end
-          attempt += 1
+      begin
+        response = connection.put url do |req|
+          req.headers['Content-Type'] = 'application/json'
+          req.body = payload
+          req.options.timeout = 0.5
+          req.options.open_timeout = 1
         end
+      rescue Faraday::ConnectionFailed, Faraday::TimeoutError, Faraday::Error => e
+        Toggleable.configuration.logger.error(message: "TOGGLE #{key} TIMEOUT")
+        raise e
       end
     end
 
@@ -97,50 +84,35 @@ module Toggleable
     end
 
     def mass_set_palanca!(mapping, actor:)
-      result = ''
-      attempt = 1
       url = '/_internal/toggle-features/bulk-update'
       payload = { mappings: mapping, user_id: actor }.to_json
 
-      while result.empty?
-        begin
-          response = connection.post url do |req|
-            req.headers['Content-Type'] = 'application/json'
-            req.body = payload
-            req.options.timeout = 2
-            req.options.open_timeout = 1
-          end
-          result = response.body
-        rescue Faraday::ConnectionFailed, Faraday::TimeoutError, Faraday::Error => e
-          if attempt >= MAX_ATTEMPT
-            Toggleable.configuration.logger.error(message: 'MASS TOGGLE TIMEOUT')
-            raise e
-          end
-          attempt += 1
+      begin
+        response = connection.post url do |req|
+          req.headers['Content-Type'] = 'application/json'
+          req.body = payload
+          req.options.timeout = 2
+          req.options.open_timeout = 1
         end
+      rescue Faraday::ConnectionFailed, Faraday::TimeoutError, Faraday::Error => e
+        Toggleable.configuration.logger.error(message: 'MASS TOGGLE TIMEOUT')
+        raise e
       end
     end
 
     def mass_get_palanca
-      result = ''
-      attempt = 1
       url = '/_internal/toggle-features/collections'
 
-      while result.empty?
-        begin
-          response = connection.get url do |req|
-            req.options.timeout = 2
-            req.options.open_timeout = 1
-          end
-          result = ::JSON.parse(response.body)
-          toggle_collections = result['data']
-        rescue Faraday::ConnectionFailed, Faraday::TimeoutError, Faraday::Error => e
-          if attempt >= MAX_ATTEMPT
-            Toggleable.configuration.logger.error(message: 'GET COLLECTIONS TIMEOUT')
-            raise e
-          end
-          attempt += 1
+      begin
+        response = connection.get url do |req|
+          req.options.timeout = 2
+          req.options.open_timeout = 1
         end
+        result = ::JSON.parse(response.body)
+        toggle_collections = result['data']
+      rescue Faraday::ConnectionFailed, Faraday::TimeoutError, Faraday::Error => e
+        Toggleable.configuration.logger.error(message: 'GET COLLECTIONS TIMEOUT')
+        raise e
       end
 
       toggle_collections
@@ -168,6 +140,10 @@ module Toggleable
 
     def connection
       @connection ||= Faraday.new(url: Toggleable.configuration.palanca_host) do |f|
+        f.use Faraday::Request::BasicAuthentication,
+              Toggleable.configuration.palanca_user, Toggleable.configuration.palanca_password
+        f.request :retry, max: 3, interval: 0.1, backoff_factor: 2,
+                          methods: RETRIABLE_METHODS
         f.adapter :net_http_persistent
       end
     end

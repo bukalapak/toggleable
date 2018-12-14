@@ -181,16 +181,6 @@ RSpec.describe Toggleable::FeatureToggler, :type => :model do
       end
     end
 
-    describe 'get key' do
-      let(:key) { 'sample_key' }
-      let(:data) { { status: true } }
-      let(:response) { { data: data }.to_json }
-
-      context 'successful' do
-        it { expect(subject.get_key(key)).to be_truthy }
-      end
-    end
-
     describe '#mass_toggle! with memory store' do
       let(:mapping_after) {
         {

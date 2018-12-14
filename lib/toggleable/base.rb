@@ -26,9 +26,10 @@ module Toggleable
         return toggle_status.to_s == 'true' unless toggle_status.nil?
 
         # Lazily register the key
-        set_status = Toggleable.configuration.storage.set_if_not_exist(key, DEFAULT_VALUE, namespace: Toggleable.configuration.namespace)
+        Toggleable.configuration.storage.set_if_not_exist(key, DEFAULT_VALUE, namespace: Toggleable.configuration.namespace)
         DEFAULT_VALUE
       end
+
       def activate!(actor: nil, email: nil)
         toggle_key(true, actor, email)
       end
