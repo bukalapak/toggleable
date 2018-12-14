@@ -21,6 +21,14 @@ module Toggleable
         Toggleable::FeatureToggler.instance.get_key(key)
       end
 
+      def active?
+        toggle_status = toggle_active
+        return toggle_status.to_s == 'true' unless toggle_status.nil?
+
+        # Lazily register the key
+        set_status = Toggleable.configuration.storage.set_if_not_exist(key, DEFAULT_VALUE, namespace: Toggleable.configuration.namespace)
+        DEFAULT_VALUE
+      end
       def activate!(actor: nil, email: nil)
         toggle_key(true, actor, email)
       end
@@ -44,9 +52,28 @@ module Toggleable
 
       private
 
+      def toggle_active
+        return @_toggle_active if defined?(@_toggle_active) && !read_expired? && Toggleable.configuration.use_memoization
+        @_last_read_at = Time.now.localtime
+
+        if Toggleable.configuration.enable_palanca
+          @_toggle_active = Toggleable::FeatureToggler.instance.get_key(key)
+        else
+          @_toggle_active = Toggleable.configuration.storage.get(key, namespace: Toggleable.configuration.namespace)
+        end
+      end
+
       def toggle_key(value, actor, email)
+        if Toggleable.configuration.enable_palanca
+          Toggleable::FeatureToggler.instance.toggle_key(key, value, actor: (email || actor))
+        else
+          Toggleable.configuration.storage.set(key, value, namespace: Toggleable.configuration.namespace)
+        end
         Toggleable.configuration.logger&.log(key: key, value: value, actor: actor)
-        Toggleable::FeatureToggler.instance.toggle_key(key, value, actor: (email || actor)) if Toggleable.configuration.enable_palanca
+      end
+
+      def read_expired?
+        @_last_read_at < Time.now.localtime - Toggleable.configuration.expiration_time
       end
     end
   end

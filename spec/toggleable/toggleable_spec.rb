@@ -25,95 +25,196 @@ RSpec.describe Toggleable::Base, :type => :model do
     allow(Toggleable::FeatureToggler.instance).to receive(:toggle_key).and_return(true)
   end
 
-  describe 'active? before key exist should create the key also' do
-    context 'with memory store' do
-      before do
-        allow(subject).to receive(:toggle_active).and_return(nil)
-        allow(Toggleable::FeatureToggler.instance).to receive(:get_key).and_return(false)
-      end
+  describe 'palanca enabled' do
+    describe 'active? before key exist should create the key also' do
+      context 'with memory store' do
+        before do
+          allow(subject).to receive(:toggle_active).and_return(nil)
+          allow(Toggleable::FeatureToggler.instance).to receive(:get_key).and_return(false)
+        end
 
-      it { expect(subject.active?).to be_falsy }
-    end
-  end
-
-  it { expect(subject.description).to eq('SampleFeature') }
-  it { expect(subject.key).to eq(subject.name.underscore) }
-  it do
-    # add description method to SampleFeature
-    SampleFeature.instance_eval do
-      def description
-        SampleFeature::DESC
+        it { expect(subject.active?).to be_falsy }
       end
     end
 
-    expect(subject.description).to eq('description')
-  end
-
-  describe 'logic behavior' do
-    let(:actor_id) { 1 }
-
-    context 'activation' do
-      before do
-        allow(Toggleable::FeatureToggler.instance).to receive(:get_key).and_return(true)
+    it { expect(subject.description).to eq('SampleFeature') }
+    it { expect(subject.key).to eq(subject.name.underscore) }
+    it do
+      # add description method to SampleFeature
+      SampleFeature.instance_eval do
+        def description
+          SampleFeature::DESC
+        end
       end
 
-      it do
-        expect(Toggleable.configuration.logger).to receive(:log).with(key: SampleFeature.key, value: true, actor: actor_id).and_return(true)
-        subject.activate!(actor: actor_id)
-        expect(subject.active?).to be_truthy
-      end
+      expect(subject.description).to eq('description')
     end
 
-    context 'deactivation' do
-      before do
-        allow(Toggleable::FeatureToggler.instance).to receive(:get_key).and_return(false)
+    describe 'logic behavior' do
+      let(:actor_id) { 1 }
+
+      context 'activation' do
+        before do
+          allow(Toggleable::FeatureToggler.instance).to receive(:get_key).and_return(true)
+        end
+
+        it do
+          expect(Toggleable.configuration.logger).to receive(:log).with(key: SampleFeature.key, value: true, actor: actor_id).and_return(true)
+          subject.activate!(actor: actor_id)
+          expect(subject.active?).to be_truthy
+        end
       end
 
-      it do
-        expect(Toggleable.configuration.logger).to receive(:log).with(key: SampleFeature.key, value: false, actor: actor_id).and_return(true)
-        subject.deactivate!(actor: actor_id)
-        expect(subject.active?).to be_falsy
-      end
-    end
+      context 'deactivation' do
+        before do
+          allow(Toggleable::FeatureToggler.instance).to receive(:get_key).and_return(false)
+        end
 
-    context 'deactivation without namespace' do
-      before do
-        allow(Toggleable::FeatureToggler.instance).to receive(:get_key).and_return(false)
-        allow(Toggleable.configuration).to receive(:namespace).and_return(nil)
-      end
-
-      it do
-        expect(Toggleable.configuration.logger).to receive(:log).with(key: SampleFeature.key, value: false, actor: actor_id).and_return(true)
-        subject.deactivate!(actor: actor_id)
-        expect(subject.active?).to be_falsy
-      end
-    end
-
-    context 'processing class when inactive will do nothing' do
-      before do
-        subject.deactivate!
-        allow(Toggleable::FeatureToggler.instance).to receive(:get_key).and_return(false)
+        it do
+          expect(Toggleable.configuration.logger).to receive(:log).with(key: SampleFeature.key, value: false, actor: actor_id).and_return(true)
+          subject.deactivate!(actor: actor_id)
+          expect(subject.active?).to be_falsy
+        end
       end
 
-      it do
-        subject.process do
+      context 'deactivation without namespace' do
+        before do
+          allow(Toggleable::FeatureToggler.instance).to receive(:get_key).and_return(false)
+          allow(Toggleable.configuration).to receive(:namespace).and_return(nil)
+        end
+
+        it do
+          expect(Toggleable.configuration.logger).to receive(:log).with(key: SampleFeature.key, value: false, actor: actor_id).and_return(true)
+          subject.deactivate!(actor: actor_id)
+          expect(subject.active?).to be_falsy
+        end
+      end
+
+      context 'processing class when inactive will do nothing' do
+        before do
+          subject.deactivate!
+          allow(Toggleable::FeatureToggler.instance).to receive(:get_key).and_return(false)
+        end
+
+        it do
+          subject.process do
+            subject.activate!
+          end
+          expect(subject.active?).to be_falsy
+        end
+      end
+
+      context 'processing class when active' do
+        before do
+          allow(Toggleable::FeatureToggler.instance).to receive(:get_key).and_return(false)
           subject.activate!
         end
-        expect(subject.active?).to be_falsy
+
+        it do
+          subject.process do
+            subject.deactivate!
+          end
+          expect(subject.active?).to be_falsy
+        end
+      end
+    end
+  end
+
+  describe 'palanca disabled' do
+
+    before(:each) do
+      allow(Toggleable.configuration).to receive(:enable_palanca).and_return(false)
+    end
+
+    describe 'active? before key exist should create the key also' do
+      context 'with memory store' do
+        before do
+          allow(subject).to receive(:toggle_active).and_return(nil)
+          allow(Toggleable::FeatureToggler.instance).to receive(:get_key).and_return(false)
+        end
+
+        it { expect(subject.active?).to be_falsy }
       end
     end
 
-    context 'processing class when active' do
-      before do
-        allow(Toggleable::FeatureToggler.instance).to receive(:get_key).and_return(false)
-        subject.activate!
+    it { expect(subject.key).to eq(subject.name.underscore) }
+    it do
+      # add description method to SampleFeature
+      SampleFeature.instance_eval do
+        def description
+          SampleFeature::DESC
+        end
       end
 
-      it do
-        subject.process do
-          subject.deactivate!
+      expect(subject.description).to eq('description')
+    end
+
+    describe 'logic behavior' do
+      let(:actor_id) { 1 }
+
+      context 'activation' do
+        before do
+          allow(Toggleable::FeatureToggler.instance).to receive(:get_key).and_return(true)
         end
-        expect(subject.active?).to be_falsy
+
+        it do
+          expect(Toggleable.configuration.logger).to receive(:log).with(key: SampleFeature.key, value: true, actor: actor_id).and_return(true)
+          subject.activate!(actor: actor_id)
+          expect(subject.active?).to be_truthy
+        end
+      end
+
+      context 'deactivation' do
+        before do
+          allow(Toggleable::FeatureToggler.instance).to receive(:get_key).and_return(false)
+        end
+
+        it do
+          expect(Toggleable.configuration.logger).to receive(:log).with(key: SampleFeature.key, value: false, actor: actor_id).and_return(true)
+          subject.deactivate!(actor: actor_id)
+          expect(subject.active?).to be_falsy
+        end
+      end
+
+      context 'deactivation without namespace' do
+        before do
+          allow(Toggleable::FeatureToggler.instance).to receive(:get_key).and_return(false)
+          allow(Toggleable.configuration).to receive(:namespace).and_return(nil)
+        end
+
+        it do
+          expect(Toggleable.configuration.logger).to receive(:log).with(key: SampleFeature.key, value: false, actor: actor_id).and_return(true)
+          subject.deactivate!(actor: actor_id)
+          expect(subject.active?).to be_falsy
+        end
+      end
+
+      context 'processing class when inactive will do nothing' do
+        before do
+          subject.deactivate!
+          allow(Toggleable::FeatureToggler.instance).to receive(:get_key).and_return(false)
+        end
+
+        it do
+          subject.process do
+            subject.activate!
+          end
+          expect(subject.active?).to be_falsy
+        end
+      end
+
+      context 'processing class when active' do
+        before do
+          allow(Toggleable::FeatureToggler.instance).to receive(:get_key).and_return(false)
+          subject.activate!
+        end
+
+        it do
+          subject.process do
+            subject.deactivate!
+          end
+          expect(subject.active?).to be_falsy
+        end
       end
     end
   end
