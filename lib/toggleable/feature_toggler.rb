@@ -72,30 +72,8 @@ module Toggleable
     def available_features(memoize: Toggleable.configuration.use_memoization)
       return @_memoized_keys if defined?(@_memoized_keys) && !read_all_keys_expired? && memoize
       @_last_read_at = Time.now.localtime
-      @_memoized_keys = mass_get_palanca
-    end
-
-    def mass_get_palanca
-      response = ''
-      attempt = 1
-      url = "#{Toggleable.configuration.palanca_host}/_internal/toggle-features/collections"
-      resource = RestClient::Resource.new(url, Toggleable.configuration.palanca_user, Toggleable.configuration.palanca_password)
-
-      while response.empty?
-        begin
-          response = resource.get timeout: 2, open_timeout: 1
-          response = ::JSON.parse(response)
-          toggle_collections = response['data']
-        rescue RestClient::ExceptionWithResponse => e
-          if attempt >= MAX_ATTEMPT
-            Toggleable.configuration.logger.error(message: "GET COLLECTIONS TIMEOUT")
-            raise e
-          end
-          attempt += 1
-        end
-      end
-
-      toggle_collections
+      toggles = mass_get_palanca
+      @_memoized_keys = {}.tap { |hash| toggles.each { |toggle| hash[toggle['feature']] = toggle['status']} }.slice(*features)
     end
 
     def mass_toggle!(mapping, actor:, email:)
@@ -123,13 +101,30 @@ module Toggleable
       end
     end
 
-    def
+    def mass_get_palanca
+      response = ''
+      attempt = 1
+      url = "#{Toggleable.configuration.palanca_host}/_internal/toggle-features/collections"
+      resource =
+
+      while response.empty?
+        begin
+          response = resource.get timeout: 2, open_timeout: 1
+          response = ::JSON.parse(response)
+          toggle_collections = response['data']
+        rescue RestClient::ExceptionWithResponse => e
+          if attempt >= MAX_ATTEMPT
+            Toggleable.configuration.logger.error(message: "GET COLLECTIONS TIMEOUT")
+            raise e
+          end
+          attempt += 1
+        end
+      end
+
+      toggle_collections
+    end
 
     private
-
-    def keys
-      Toggleable.configuration.storage.get_all(namespace: Toggleable.configuration.namespace)
-    end
 
     def read_all_keys_expired?
       @_last_read_at < Time.now.localtime - Toggleable.configuration.expiration_time
