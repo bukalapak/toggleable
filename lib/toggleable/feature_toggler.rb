@@ -48,7 +48,12 @@ module Toggleable
       log_changes(mapping, actor) if Toggleable.configuration.logger
 
       return if mapping.empty?
+
+      start_time = Time.now
       Toggleable.configuration.storage.mass_set(mapping, namespace: Toggleable.configuration.namespace)
+      duration = (Time.now - start_time)
+      Toggleable.configuration.instrumentor&.latency(duration, 'redis_mass_set', 'ok')
+
       notify_changes(mapping, actor) if Toggleable.configuration.notify_host
     end
 
@@ -67,7 +72,13 @@ module Toggleable
       return @_toggle_active[key] if Toggleable.configuration.use_memoization && @_toggle_active.key?(key) && !read_key_expired?(key)
 
       @_last_key_read_at[key] = Time.now.localtime
+
+      start_time = Time.now
       @_toggle_active[key] = Toggleable.configuration.storage.get(key, namespace: Toggleable.configuration.namespace)
+      duration = (Time.now - start_time)
+      Toggleable.configuration.instrumentor&.latency(duration, 'redis_get', 'ok')
+
+      @_toggle_active[key]
     rescue StandardError
       false
     end
