@@ -18,10 +18,6 @@ module Toggleable
     # it will generate these methods into included class.
     module ClassMethods
       def active?
-        Toggleable::FeatureToggler.instance.get_key(key)
-      end
-
-      def active?
         toggle_status = toggle_active
         return toggle_status.to_s == 'true' unless toggle_status.nil?
 
@@ -56,12 +52,7 @@ module Toggleable
       def toggle_active
         return @_toggle_active if defined?(@_toggle_active) && !read_expired? && Toggleable.configuration.use_memoization
         @_last_read_at = Time.now.localtime
-
-        if Toggleable.configuration.enable_palanca
-          @_toggle_active = Toggleable::FeatureToggler.instance.get_key(key)
-        else
-          @_toggle_active = Toggleable.configuration.storage.get(key, namespace: Toggleable.configuration.namespace)
-        end
+        @_toggle_active = Toggleable.configuration.enable_palanca ? Toggleable::FeatureToggler.instance.get_key(key) : Toggleable.configuration.storage.get(key, namespace: Toggleable.configuration.namespace)
       end
 
       def toggle_key(value, actor, email)

@@ -45,13 +45,11 @@ module Toggleable
     end
 
     def toggle_key(key, value, actor: nil)
-      result = ''
-      attempt = 1
       url = '/_internal/toggle-features'
       payload = { feature: key, status: value, user_id: actor }.to_json
 
       begin
-        response = connection.put url do |req|
+        connection.put url do |req|
           req.headers['Content-Type'] = 'application/json'
           req.body = payload
           req.options.timeout = 0.5
@@ -88,7 +86,7 @@ module Toggleable
       payload = { mappings: mapping, user_id: actor }.to_json
 
       begin
-        response = connection.post url do |req|
+        connection.post url do |req|
           req.headers['Content-Type'] = 'application/json'
           req.body = payload
           req.options.timeout = 2
