@@ -55,7 +55,12 @@ module Toggleable
     private
 
     def keys
-      Toggleable.configuration.storage.get_all(namespace: Toggleable.configuration.namespace)
+      start_time = Time.now
+      keys = Toggleable.configuration.storage.get_all(namespace: Toggleable.configuration.namespace)
+      duration = (Time.now - start_time)
+      Toggleable.configuration.instrumentor&.latency(duration, 'redis_mass_get', 'ok')
+
+      keys
     end
 
     def toggle_active(key)
@@ -70,7 +75,13 @@ module Toggleable
     def memoized_keys
       return @_memoized_keys if defined?(@_memoized_keys) && !read_all_keys_expired?
       @_last_read_at = Time.now.localtime
+
+      start_time = Time.now
       @_memoized_keys = Toggleable.configuration.storage.get_all(namespace: Toggleable.configuration.namespace)
+      duration = (Time.now - start_time)
+      Toggleable.configuration.instrumentor&.latency(duration, 'redis_mass_get', 'ok')
+
+      @_memoized_keys
     end
 
     def read_all_keys_expired?

@@ -52,7 +52,12 @@ module Toggleable
 
       def toggle_key(value, actor)
         Toggleable.configuration.logger&.log(key: key, value: value, actor: actor)
+
+        start_time = Time.now
         Toggleable.configuration.storage.set(key, value, namespace: Toggleable.configuration.namespace)
+        duration = (Time.now - start_time)
+        Toggleable.configuration.instrumentor&.latency(duration, 'redis_set', 'ok')
+
         notify_changes({ key => value.to_s }, actor) if Toggleable.configuration.notify_host && !Toggleable.configuration.blacklisted_notif_key&.include?(key)
       end
 
@@ -67,7 +72,13 @@ module Toggleable
       def toggle_active
         return @_toggle_active if defined?(@_toggle_active) && !read_expired? && Toggleable.configuration.use_memoization
         @_last_read_at = Time.now.localtime
+
+        start_time = Time.now
         @_toggle_active = Toggleable.configuration.storage.get(key, namespace: Toggleable.configuration.namespace)
+        duration = (Time.now - start_time)
+        Toggleable.configuration.instrumentor&.latency(duration, 'redis_get', 'ok')
+
+        @_toggle_active
       rescue StandardError => e
         raise e
       end
