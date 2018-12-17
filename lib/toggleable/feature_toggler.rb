@@ -68,7 +68,7 @@ module Toggleable
       @_last_read_at = Time.now.localtime
       if Toggleable.configuration.enable_palanca
         toggles = mass_get_palanca
-        @_memoized_keys = {}.tap{ |hash| toggles.each{ |toggle| hash[toggle['feature']] = toggle['status'] } }.slice(*features)
+        @_memoized_keys = {}.tap{ |hash| toggles.each{ |toggle| hash[toggle['feature']] = toggle['status'].to_s } }.slice(*features)
       else
         @_memoized_keys = keys.slice(*features)
       end
