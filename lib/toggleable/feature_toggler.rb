@@ -11,6 +11,7 @@ module Toggleable
     include Singleton
 
     RETRIABLE_METHODS = %i[delete get patch post put].freeze
+    RETRIABLE_EXCEPTIONS = [Faraday::ConnectionFailed, Faraday::TimeoutError, ::Net::ReadTimeout, 'Timeout::Error'].freeze
 
     attr_reader :features
 
@@ -138,10 +139,11 @@ module Toggleable
 
     def connection
       @connection ||= Faraday.new(url: Toggleable.configuration.palanca_host) do |f|
+        f.use Faraday::Response::RaiseError
         f.use Faraday::Request::BasicAuthentication,
               Toggleable.configuration.palanca_user, Toggleable.configuration.palanca_password
         f.request :retry, max: 3, interval: 0.1, backoff_factor: 2,
-                          methods: RETRIABLE_METHODS
+                          methods: RETRIABLE_METHODS, exceptions: RETRIABLE_EXCEPTIONS
         f.adapter :net_http_persistent
       end
     end
