@@ -13,7 +13,6 @@ module Toggleable
 
     RETRIABLE_METHODS = %i[delete get patch post put].freeze
     RETRIABLE_EXCEPTIONS = [Faraday::ConnectionFailed, Faraday::TimeoutError, ::Net::ReadTimeout, 'Timeout::Error'].freeze
-    RETRIABLE_EXCEPTIONS = [Faraday::ConnectionFailed, Faraday::TimeoutError, ::Net::ReadTimeout, 'Timeout::Error'].freeze
 
     attr_reader :features
 
