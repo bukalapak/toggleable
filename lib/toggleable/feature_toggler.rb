@@ -1,9 +1,10 @@
 # frozen_string_literal: true
 
-require 'singleton'
-require 'faraday'
 require 'active_support/inflector'
+require 'faraday'
 require 'json'
+require 'net/http/persistent'
+require 'singleton'
 
 module Toggleable
   # Toggleable::FeatureToggler provides an instance to manage all toggleable keys.
@@ -11,6 +12,7 @@ module Toggleable
     include Singleton
 
     RETRIABLE_METHODS = %i[delete get patch post put].freeze
+    RETRIABLE_EXCEPTIONS = [Faraday::ConnectionFailed, Faraday::TimeoutError, ::Net::ReadTimeout, 'Timeout::Error'].freeze
     RETRIABLE_EXCEPTIONS = [Faraday::ConnectionFailed, Faraday::TimeoutError, ::Net::ReadTimeout, 'Timeout::Error'].freeze
 
     attr_reader :features
