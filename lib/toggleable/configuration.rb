@@ -8,6 +8,8 @@ module Toggleable
     attr_accessor :palanca_host
     attr_accessor :palanca_user
     attr_accessor :palanca_password
+    attr_accessor :cb_timeout
+    attr_accessor :cb_threshold
     attr_accessor :storage ## storage used. default: memory store
     attr_accessor :namespace ## required for prefixing the keys. default: `toggleable``
     attr_accessor :logger ## optional, it will not log if not configured.

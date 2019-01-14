@@ -33,6 +33,7 @@ Gem::Specification.new do |spec|
 
   spec.add_runtime_dependency "activesupport", ">= 4.0.0"
   spec.add_runtime_dependency "faraday"
+  spec.add_runtime_dependency "faraday_middleware-circuit_breaker"
   spec.add_runtime_dependency "net-http-persistent"
   spec.add_runtime_dependency "json"
   spec.add_development_dependency "bundler", "~> 1.14"

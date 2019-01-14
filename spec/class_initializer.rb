@@ -16,6 +16,10 @@ class SampleLogger < Toggleable::LoggerAbstract
   def log(key:, value:, actor:)
     logger.info "Change on #{key} to #{value} by #{actor}"
   end
+
+  def error(message:)
+    logger.error message
+  end
 end
 
 ## Initialize Toggleable

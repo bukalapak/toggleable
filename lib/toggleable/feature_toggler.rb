@@ -2,6 +2,7 @@
 
 require 'active_support/inflector'
 require 'faraday'
+require 'faraday_middleware/circuit_breaker'
 require 'json'
 require 'net/http/persistent'
 require 'singleton'
@@ -11,8 +12,12 @@ module Toggleable
   class FeatureToggler
     include Singleton
 
-    RETRIABLE_METHODS = %i[delete get patch post put].freeze
+    RETRIABLE_METHODS    = %i[delete get patch post put].freeze
     RETRIABLE_EXCEPTIONS = [Faraday::ConnectionFailed, Faraday::TimeoutError, ::Net::ReadTimeout, 'Timeout::Error'].freeze
+    GET_KEY_URL          = '/_internal/toggle-features'
+    TOGGLE_KEY_URL       = '/_internal/toggle-features'
+    MASS_GET_URL         = '/_internal/toggle-features/collections'
+    MASS_SET_URL         = '/_internal/toggle-features/bulk-update'
 
     attr_reader :features
 
@@ -30,13 +35,14 @@ module Toggleable
       return @_toggle_active[key] if !@_toggle_active[key].nil? && !read_key_expired?(key) && Toggleable.configuration.use_memoization
 
       @_last_key_read_at[key] = Time.now.localtime
-      url = "/_internal/toggle-features?feature=#{key}"
 
       begin
-        response = connection.get url do |req|
+        response = connection.get GET_KEY_URL do |req|
           req.options.timeout = 0.2
           req.options.open_timeout = 1
+          req.params['feature'] = key
         end
+
         result = ::JSON.parse(response.body)
         @_toggle_active[key] = result['data']['status']
       rescue Faraday::ConnectionFailed, Faraday::TimeoutError, Faraday::Error => e
@@ -47,11 +53,10 @@ module Toggleable
     end
 
     def toggle_key(key, value, actor: nil)
-      url = '/_internal/toggle-features'
       payload = { feature: key, status: value, user_id: actor }.to_json
 
       begin
-        connection.put url do |req|
+        connection.put TOGGLE_KEY_URL do |req|
           req.headers['Content-Type'] = 'application/json'
           req.body = payload
           req.options.timeout = 0.5
@@ -65,6 +70,7 @@ module Toggleable
 
     def available_features(memoize: Toggleable.configuration.use_memoization)
       return @_memoized_keys if defined?(@_memoized_keys) && !read_all_keys_expired? && memoize
+
       @_last_read_at = Time.now.localtime
       if Toggleable.configuration.enable_palanca
         toggles = mass_get_palanca
@@ -84,11 +90,10 @@ module Toggleable
     end
 
     def mass_set_palanca!(mapping, actor:)
-      url = '/_internal/toggle-features/bulk-update'
       payload = { mappings: mapping, user_id: actor }.to_json
 
       begin
-        connection.post url do |req|
+        connection.post MASS_SET_URL do |req|
           req.headers['Content-Type'] = 'application/json'
           req.body = payload
           req.options.timeout = 2
@@ -101,10 +106,8 @@ module Toggleable
     end
 
     def mass_get_palanca
-      url = '/_internal/toggle-features/collections'
-
       begin
-        response = connection.get url do |req|
+        response = connection.get MASS_GET_URL do |req|
           req.options.timeout = 2
           req.options.open_timeout = 1
         end
@@ -143,10 +146,28 @@ module Toggleable
         f.use Faraday::Response::RaiseError
         f.use Faraday::Request::BasicAuthentication,
               Toggleable.configuration.palanca_user, Toggleable.configuration.palanca_password
+        f.use :circuit_breaker,
+              timeout: Toggleable.configuration.cb_timeout.to_f,
+              threshold: Toggleable.configuration.cb_timeout.to_f,
+              fallback: method(:faraday_fallback)
         f.request :retry, max: 3, interval: 0.1, backoff_factor: 2,
                           methods: RETRIABLE_METHODS, exceptions: RETRIABLE_EXCEPTIONS
         f.adapter :net_http_persistent
       end
+    end
+
+    def faraday_fallback(env, exception)
+      raise exception if exception
+
+      if env.url.path == GET_KEY_URL
+        status = 200
+        body = { data: { status: false } }.to_json
+      else
+        status = 503
+        body = nil
+      end
+
+      Faraday::Response.new(status: status, response_headers: {}, body: body)
     end
   end
 end
