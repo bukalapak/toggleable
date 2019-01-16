@@ -148,7 +148,7 @@ module Toggleable
               Toggleable.configuration.palanca_user, Toggleable.configuration.palanca_password
         f.use :circuit_breaker,
               timeout: Toggleable.configuration.cb_timeout.to_f,
-              threshold: Toggleable.configuration.cb_timeout.to_f,
+              threshold: Toggleable.configuration.cb_threshold.to_f,
               fallback: method(:faraday_fallback)
         f.request :retry, max: 3, interval: 0.1, backoff_factor: 2,
                           methods: RETRIABLE_METHODS, exceptions: RETRIABLE_EXCEPTIONS
