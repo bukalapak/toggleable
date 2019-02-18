@@ -46,7 +46,7 @@ module Toggleable
         result = ::JSON.parse(response.body)
         @_toggle_active[key] = result['data']['status']
       rescue Faraday::ConnectionFailed, Faraday::TimeoutError, Faraday::Error => e
-        Toggleable.configuration.logger.error(message: "GET #{key} TIMEOUT")
+        Toggleable.configuration.logger.error(message: "GET #{key} TIMEOUT: #{e.message}")
         raise e
       end
       @_toggle_active[key]
@@ -63,7 +63,7 @@ module Toggleable
           req.options.open_timeout = 1
         end
       rescue Faraday::ConnectionFailed, Faraday::TimeoutError, Faraday::Error => e
-        Toggleable.configuration.logger.error(message: "TOGGLE #{key} TIMEOUT")
+        Toggleable.configuration.logger.error(message: "TOGGLE #{key} TIMEOUT: #{e.message}")
         raise e
       end
     end
@@ -100,7 +100,7 @@ module Toggleable
           req.options.open_timeout = 1
         end
       rescue Faraday::ConnectionFailed, Faraday::TimeoutError, Faraday::Error => e
-        Toggleable.configuration.logger.error(message: 'MASS TOGGLE TIMEOUT')
+        Toggleable.configuration.logger.error(message: "MASS TOGGLE TIMEOUT: #{e.message}")
         raise e
       end
     end
@@ -114,7 +114,7 @@ module Toggleable
         result = ::JSON.parse(response.body)
         toggle_collections = result['data']
       rescue Faraday::ConnectionFailed, Faraday::TimeoutError, Faraday::Error => e
-        Toggleable.configuration.logger.error(message: 'GET COLLECTIONS TIMEOUT')
+        Toggleable.configuration.logger.error(message: "GET COLLECTIONS TIMEOUT: #{e.message}")
         raise e
       end
 
