@@ -60,7 +60,7 @@ module Toggleable
           req.headers['Content-Type'] = 'application/json'
           req.body = payload
           req.options.timeout = 0.5
-          req.options.open_timeout = 1
+          req.options.open_timeout = 0.75
         end
       rescue Faraday::ConnectionFailed, Faraday::TimeoutError, Faraday::Error => e
         Toggleable.configuration.logger.error(message: "TOGGLE #{key} TIMEOUT: #{e.message}")
@@ -150,7 +150,7 @@ module Toggleable
               timeout: Toggleable.configuration.cb_timeout.to_f,
               threshold: Toggleable.configuration.cb_threshold.to_f,
               fallback: method(:faraday_fallback)
-        f.request :retry, max: 3, interval: 0.1, backoff_factor: 2,
+        f.request :retry, max: 6, interval: 0.1, backoff_factor: 2,
                           methods: RETRIABLE_METHODS, exceptions: RETRIABLE_EXCEPTIONS
         f.adapter :net_http_persistent
       end
