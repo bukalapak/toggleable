@@ -150,7 +150,7 @@ module Toggleable
               timeout: Toggleable.configuration.cb_timeout.to_f,
               threshold: Toggleable.configuration.cb_threshold.to_f,
               fallback: method(:faraday_fallback)
-        f.request :retry, max: 6, interval: 0.1, backoff_factor: 2,
+        f.request :retry, max: Toggleable.configuration.max_retry.to_i, interval: 0.1, backoff_factor: 2,
                           methods: RETRIABLE_METHODS, exceptions: RETRIABLE_EXCEPTIONS
         f.adapter :net_http_persistent
       end
