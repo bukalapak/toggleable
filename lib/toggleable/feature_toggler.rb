@@ -2,7 +2,6 @@
 
 require 'active_support/inflector'
 require 'faraday'
-require 'faraday_middleware/circuit_breaker'
 require 'json'
 require 'net/http/persistent'
 require 'singleton'
@@ -146,28 +145,10 @@ module Toggleable
         f.use Faraday::Response::RaiseError
         f.use Faraday::Request::BasicAuthentication,
               Toggleable.configuration.palanca_user, Toggleable.configuration.palanca_password
-        f.use :circuit_breaker,
-              timeout: Toggleable.configuration.cb_timeout.to_f,
-              threshold: Toggleable.configuration.cb_threshold.to_f,
-              fallback: method(:faraday_fallback)
         f.request :retry, max: Toggleable.configuration.max_retry.to_i, interval: 0.1, backoff_factor: 2,
                           methods: RETRIABLE_METHODS, exceptions: RETRIABLE_EXCEPTIONS
         f.adapter :net_http_persistent
       end
-    end
-
-    def faraday_fallback(env, exception)
-      raise exception if exception
-
-      if env.url.path == GET_KEY_URL
-        status = 200
-        body = { data: { status: false } }.to_json
-      else
-        status = 503
-        body = nil
-      end
-
-      Faraday::Response.new(status: status, response_headers: {}, body: body)
     end
   end
 end

@@ -26,8 +26,6 @@ module Toggleable
     configuration.storage         ||= Toggleable::MemoryStore.new
     configuration.namespace       ||= 'toggleable'
     configuration.expiration_time ||= 5.minutes
-    configuration.cb_timeout      ||= 5
-    configuration.cb_threshold    ||= 10
     configuration.max_retry       ||= 6
   end
 end
