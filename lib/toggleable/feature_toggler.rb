@@ -54,6 +54,7 @@ module Toggleable
       duration = (Time.now - start_time)
       Toggleable.configuration.instrumentor&.latency(duration, 'redis_mass_set', 'ok')
 
+      mapping.transform_values! { |v| v.to_s }
       notify_changes(mapping, actor) if Toggleable.configuration.notify_host
     end
 
