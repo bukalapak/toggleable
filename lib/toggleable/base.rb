@@ -18,7 +18,7 @@ module Toggleable
 
     # it will generate these methods into included class.
     module ClassMethods
-      def active?
+      def active?(_user = nil)
         toggle_status = toggle_active
         return toggle_status.to_s == 'true' unless toggle_status.nil?
 
