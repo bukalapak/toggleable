@@ -35,6 +35,16 @@ RSpec.describe Toggleable::Base, :type => :model do
 
         it { expect(subject.active?).to be_falsy }
       end
+
+      context 'with user id' do
+        let(:user_id) { 1 }
+
+        before do
+          allow(Toggleable::FeatureToggler.instance).to receive(:get_key).with('sample_feature', user_id).and_return(true)
+        end
+
+        it { expect(subject.active?(user_id)).to be_truthy }
+      end
     end
 
     it { expect(subject.description).to eq('SampleFeature') }
