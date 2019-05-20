@@ -28,7 +28,7 @@ module Toggleable
       features << key
     end
 
-    def get_key(key)
+    def get_key(key, user_id = nil)
       @_toggle_active ||= {}
       @_last_key_read_at ||= {}
       return @_toggle_active[key] if !@_toggle_active[key].nil? && !read_key_expired?(key) && Toggleable.configuration.use_memoization
@@ -40,6 +40,7 @@ module Toggleable
           req.options.timeout = 0.2
           req.options.open_timeout = 1
           req.params['feature'] = key
+          req.params['user_id'] = user_id.to_i if user_id
         end
 
         result = ::JSON.parse(response.body)

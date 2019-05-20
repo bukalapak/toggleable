@@ -86,6 +86,17 @@ RSpec.describe Toggleable::FeatureToggler, :type => :model do
 
         it { expect(subject.get_key(key)).to be_truthy }
       end
+
+      context 'successful with user_id' do
+        let(:user_id) { 1 }
+
+        before do
+          stub_request(:get, "http://localhost:8027/_internal/toggle-features?feature=#{key}&user_id=#{user_id}")
+                      .to_return(status: 200, body: response)
+        end
+
+        it { expect(subject.get_key(key, user_id)).to be_truthy }
+      end
     end
 
     before do
