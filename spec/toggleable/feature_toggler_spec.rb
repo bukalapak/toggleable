@@ -17,6 +17,22 @@ RSpec.describe Toggleable::FeatureToggler, :type => :model do
       it { expect(subject.features).to include('key/name') }
     end
 
+    describe '#feature toggler create key' do
+      let(:key) { 'test/create_key'}
+      let(:actor_id) { 1 }
+
+      before do
+        allow(Toggleable.configuration).to receive(:storage).and_return(redis_storage)
+      end
+
+      context 'set only if not exist' do
+        it do
+          expect(subject.create_key(key, true, actor_id)).to be_truthy
+          expect(subject.create_key(key, true, actor_id)).to be_falsy
+        end
+      end
+    end
+
     describe '#available_features' do
       context 'without memoize' do
         let(:keys) {

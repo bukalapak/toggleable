@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'active_support/cache'
+require 'pry'
 
 module Toggleable
   # Toggleable::selfAbstract describes the interface class for
@@ -21,9 +22,8 @@ module Toggleable
     end
 
     def set_if_not_exist(key, value, namespace:)
-      fetch(key, namespace: namespace) do
-        value
-      end
+      exist = read(key, namespace: namespace)
+      write(key, value, namespace: namespace) if exist.nil?
     end
 
     def mass_set(mappings, namespace:)

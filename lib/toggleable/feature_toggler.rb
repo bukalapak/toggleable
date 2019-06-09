@@ -2,6 +2,7 @@
 
 require 'singleton'
 require 'rest-client'
+require 'pry'
 
 module Toggleable
   # Toggleable::FeatureToggler provides an instance to manage all toggleable keys.
@@ -29,6 +30,16 @@ module Toggleable
       # Lazily register the key
       Toggleable.configuration.storage.set_if_not_exist(key, DEFAULT_VALUE, namespace: Toggleable.configuration.namespace)
       DEFAULT_VALUE
+    end
+
+    def create_key(key, value, actor)
+      success = Toggleable.configuration.storage.set_if_not_exist(key, value, namespace: Toggleable.configuration.namespace)
+      return unless success
+
+      Toggleable.configuration.logger&.log(key: key, value: value, actor: actor)
+      notify_changes({ key => value.to_s }, actor) if Toggleable.configuration.notify_host
+
+      success
     end
 
     def toggle_key(key, value, actor)
