@@ -2,7 +2,6 @@
 
 require 'singleton'
 require 'rest-client'
-require 'pry'
 
 module Toggleable
   # Toggleable::FeatureToggler provides an instance to manage all toggleable keys.
