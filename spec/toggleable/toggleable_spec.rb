@@ -34,6 +34,16 @@ RSpec.describe Toggleable::Base, :type => :model do
 
       it { expect(subject.active?).to be_falsy }
     end
+
+    context 'raise error' do
+      before do
+        allow(Toggleable.configuration.storage).to receive(:get).and_raise(Redis::CannotConnectError)
+      end
+
+      it do
+        expect { (subject.active?) }.to raise_exception(Redis::CannotConnectError)
+      end
+    end
   end
 
   it { expect(subject.description).to eq('SampleFeature') }
@@ -116,16 +126,6 @@ RSpec.describe Toggleable::Base, :type => :model do
         end
         expect(subject.active?).to be_falsy
       end
-    end
-
-    context 'wrong argument type for to bool' do
-      let(:wrong_args) { 'wrong args' }
-
-      before do
-        allow(subject).to receive(:toggle_active).and_return(wrong_args)
-      end
-
-      it { expect { subject.active? }.to raise_error(ArgumentError) }
     end
   end
 end

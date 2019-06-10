@@ -17,14 +17,28 @@ RSpec.describe Toggleable::FeatureToggler, :type => :model do
       it { expect(subject.features).to include('key/name') }
     end
 
+    describe '#feature toggler create key' do
+      let(:key) { 'test/create_key'}
+      let(:actor_id) { 1 }
+
+      before do
+        allow(Toggleable.configuration).to receive(:storage).and_return(redis_storage)
+      end
+
+      context 'set only if not exist' do
+        it do
+          expect(subject.create_key(key, true, actor_id)).to be_truthy
+          expect(subject.create_key(key, true, actor_id)).to be_falsy
+        end
+      end
+    end
+
     describe '#available_features' do
       context 'without memoize' do
         let(:keys) {
           {
             'active_key' => 'true',
-            'inactive_key' => 'false',
-            'unavailable_key' => 'true'
-          }
+            'inactive_key' => 'false'          }
         }
 
         before do
@@ -39,9 +53,7 @@ RSpec.describe Toggleable::FeatureToggler, :type => :model do
         let(:keys) {
           {
             'active_key' => 'true',
-            'inactive_key' => 'false',
-            'unavailable_key' => 'true'
-          }
+            'inactive_key' => 'false'          }
         }
 
         let(:updated_keys) {
@@ -65,16 +77,8 @@ RSpec.describe Toggleable::FeatureToggler, :type => :model do
     end
 
     describe '#mass_toggle! with memory store' do
-      let(:mapping_before) {
-        {
-          'key' => 'true',
-          'other_key' => 'false'
-        }
-      }
-
       let(:mapping_after) {
         {
-          'key' => 'true',
           'other_key' => 'true'
         }
       }
@@ -84,7 +88,6 @@ RSpec.describe Toggleable::FeatureToggler, :type => :model do
       before do
         subject.register('key')
         subject.register('other_key')
-        subject.mass_toggle!(mapping_before, actor: actor_id)
       end
 
       it do
@@ -97,34 +100,59 @@ RSpec.describe Toggleable::FeatureToggler, :type => :model do
     describe '#mass_toggle! with redis' do
       before do
         allow(Toggleable.configuration).to receive(:storage).and_return(redis_storage)
+        redis_instance.del(Toggleable.configuration.namespace)
       end
-
-      let(:mapping_before) {
-        {
-          'key' => 'true',
-          'other_key' => 'false'
-        }
-      }
 
       let(:mapping_after) {
         {
-          'key' => 'true',
-          'other_key' => 'true'
-        }
+          'logged_key' => 'true'        }
       }
 
       let(:actor_id) { 1 }
 
       before do
-        subject.register('key')
-        subject.register('other_key')
-        subject.mass_toggle!(mapping_before, actor: actor_id)
+        subject.register('logged_key')
       end
 
       it do
-        expect(Toggleable.configuration.logger).to receive(:log).with(key: 'other_key', value: 'true', actor: actor_id).and_return(true)
+        expect(Toggleable.configuration.logger).to receive(:log).with(key: 'logged_key', value: 'true', actor: actor_id).and_return(true)
         subject.mass_toggle!(mapping_after, actor: actor_id)
         expect(subject.available_features).to include(mapping_after)
+      end
+    end
+
+    describe '#feature toggler get/toggle key' do
+      let(:key) { 'test/get_key'}
+      let(:actor_id) { 1 }
+
+      context 'without memoization' do
+        it do
+          expect(subject.get_key(key)).to be_falsy
+          subject.toggle_key(key, true, actor_id)
+          expect(subject.get_key(key)).to be_truthy
+        end
+      end
+
+      context 'with memoization' do
+        before do
+          allow(Toggleable.configuration).to receive(:use_memoization).and_return(true)
+        end
+
+        it do
+          expect(subject.get_key(key)).to be_truthy
+          subject.toggle_key(key, false, actor_id)
+          expect(subject.get_key(key)).to be_truthy
+        end
+      end
+
+      context 'raise error' do
+        before do
+          allow(Toggleable.configuration.storage).to receive(:get).and_raise(Redis::CannotConnectError)
+        end
+
+        it do
+          expect(subject.get_key(key)).to be_falsy
+        end
       end
     end
   end
