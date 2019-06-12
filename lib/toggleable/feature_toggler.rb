@@ -33,6 +33,16 @@ module Toggleable
       DEFAULT_VALUE
     end
 
+    def create_key(key, value, actor, namespace: Toggleable.configuration.namespace)
+      success = Toggleable.configuration.storage.set_if_not_exist(key, value, namespace: namespace)
+      return unless success
+
+      Toggleable.configuration.logger&.log(key: key, value: value, actor: actor, namespace: namespace)
+      Toggleable.configuration.notifier&.notify({ key => value.to_s }, actor, namespace)
+
+      success
+    end
+
     def toggle_key(key, value, actor, namespace: Toggleable.configuration.namespace)
       prev = Toggleable.configuration.storage.get(key, namespace: namespace)
 
