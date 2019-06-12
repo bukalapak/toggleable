@@ -18,8 +18,8 @@ module Toggleable
 
     # it will generate these methods into included class.
     module ClassMethods
-      def active?(_user = nil)
-        toggle_status = toggle_active
+      def active?(namespace: Toggleable.configuration.namespace)
+        toggle_status = toggle_active(namespace)
         return toggle_status.to_s == 'true' unless toggle_status.nil?
 
         # Lazily register the key
@@ -27,12 +27,12 @@ module Toggleable
         DEFAULT_VALUE
       end
 
-      def activate!(actor: nil)
-        toggle_key(true, actor)
+      def activate!(actor: nil, namespace: Toggleable.configuration.namespace)
+        toggle_key(true, actor, namespace)
       end
 
-      def deactivate!(actor: nil)
-        toggle_key(false, actor)
+      def deactivate!(actor: nil, namespace: Toggleable.configuration.namespace)
+        toggle_key(false, actor, namespace)
       end
 
       def key
@@ -50,11 +50,11 @@ module Toggleable
 
       private
 
-      def toggle_key(value, actor)
-        Toggleable.configuration.logger&.log(key: key, value: value, actor: actor)
+      def toggle_key(value, actor, namespace)
+        Toggleable.configuration.logger&.log(key: key, value: value, actor: actor, namespace: namespace)
 
         start_time = Time.now
-        Toggleable.configuration.storage.set(key, value, namespace: Toggleable.configuration.namespace)
+        Toggleable.configuration.storage.set(key, value, namespace: namespace)
         duration = (Time.now - start_time)
         Toggleable.configuration.instrumentor&.latency(duration, 'redis_set', 'ok')
 
@@ -69,22 +69,25 @@ module Toggleable
         nil
       end
 
-      def toggle_active
-        return @_toggle_active if defined?(@_toggle_active) && !read_expired? && Toggleable.configuration.use_memoization
-        @_last_read_at = Time.now.localtime
+      def toggle_active(namespace)
+        @_toggle_active ||= {}
+        @_last_read_at ||= {}
+
+        return @_toggle_active[namespace] if @_toggle_active.key?(namespace) && !read_expired?(namespace) && Toggleable.configuration.use_memoization
+        @_last_read_at[namespace] = Time.now.localtime
 
         start_time = Time.now
-        @_toggle_active = Toggleable.configuration.storage.get(key, namespace: Toggleable.configuration.namespace)
+        @_toggle_active[namespace] = Toggleable.configuration.storage.get(key, namespace: namespace)
         duration = (Time.now - start_time)
         Toggleable.configuration.instrumentor&.latency(duration, 'redis_get', 'ok')
 
-        @_toggle_active
+        @_toggle_active[namespace]
       rescue StandardError => e
         raise e
       end
 
-      def read_expired?
-        @_last_read_at < Time.now.localtime - Toggleable.configuration.expiration_time
+      def read_expired?(namespace)
+        @_last_read_at[namespace] < Time.now.localtime - Toggleable.configuration.expiration_time
       end
     end
   end

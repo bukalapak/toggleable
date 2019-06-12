@@ -25,7 +25,7 @@ module Toggleable
 
     # set default configuration for storage and namespace if none was provided
     configuration.storage         ||= Toggleable::MemoryStore.new
-    configuration.namespace       ||= 'toggleable_rspec'
+    configuration.namespace       ||= 'toggleable'
     configuration.expiration_time ||= 5.minutes
   end
 end

@@ -5,7 +5,7 @@ module Toggleable
   class LoggerAbstract
     # the redis you provide must implement these methods
 
-    def log(_key:, _value:, _actor:)
+    def log(_key:, _value:, _actor:, _namespace:)
       raise NotImplementedError, "You must implement #{method_name}"
     end
 

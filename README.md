@@ -53,17 +53,38 @@ SampleFeature.deactivate! actor: user.id
 # => 'false'
 ```
 
+Toggleable support multiple namespace. You can provide the namespace in method arguments. If no namespace provided, it will use default namespace from Toggleable.configuration.namespace
+
+```ruby
+SampleFeature.active?(namespace: 'other_namespace')
+# => 'false'
+
+SampleFeature.activate!(namespace: 'other_namespace')
+# => "true"
+
+SampleFeature.active?(namespace: 'other_namespace')
+# => "true"
+
+SampleFeature.active?
+# => "false"
+
+```
+
 ### Managing Toggles
 
 You could manage your toggles using `Toggleable::FeatureToggler` class.
 
-```
+```ruby
 # This will get all keys and its value
 Toggleable::FeatureToggler.instance.available_features
 # => {'key': 'true', 'other_key': 'false'}
 
 Toggleable::FeatureToggler.mass_toggle!(mapping, actor: user.id)
 # => 'true'
+
+# Toggleable::FeatureToggler also support multiple namespace
+Toggleable::FeatureToggler.instance.available_features(namespace: 'other_namespace')
+# => {'other_key': 'true', 'another_key': 'false'}
 ```
 
 ### Redis Store Implementation

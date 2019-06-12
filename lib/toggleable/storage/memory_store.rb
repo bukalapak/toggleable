@@ -13,7 +13,7 @@ module Toggleable
     end
 
     def get_all(namespace:)
-      read_multi(*keys, namespace: namespace)
+      read_multi(*keys(namespace), namespace: namespace)
     end
 
     def set(key, value, namespace:)
@@ -30,15 +30,15 @@ module Toggleable
       write_multi(mappings, namespace: namespace)
     end
 
-    def keys
+    def keys(namespace)
       cache_keys = @data.keys
-      normalize_keys(cache_keys)
+      normalize_keys(cache_keys, namespace)
     end
 
     private
 
-    def normalize_keys(cache_keys)
-      cache_keys.map{ |k| k.sub("#{Toggleable.configuration.namespace}:", '') }
+    def normalize_keys(cache_keys, namespace)
+      cache_keys.map{ |k| k.sub("#{namespace}:", '') }
     end
   end
 end
