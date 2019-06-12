@@ -5,6 +5,7 @@ require 'toggleable/configuration'
 require 'toggleable/storage'
 require 'toggleable/instrumentor_abstract'
 require 'toggleable/logger_abstract'
+require 'toggleable/notifier_abstract'
 require 'toggleable/feature_toggler'
 require 'toggleable/base'
 
