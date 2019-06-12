@@ -38,7 +38,7 @@ module Toggleable
 
       Toggleable.configuration.logger&.log(key: key, value: value, actor: actor, namespace: namespace)
       Toggleable.configuration.storage.set(key, value, namespace: namespace)
-      notify_changes({ key => value.to_s }, actor) if should_notify?(key, prev, value)
+      Toggleable.configuration.notifier&.notify({ key => value.to_s }, actor, namespace) if should_notify?(key, prev, value)
     end
 
     def available_features(memoize: Toggleable.configuration.use_memoization, namespace: Toggleable.configuration.namespace)
@@ -57,7 +57,7 @@ module Toggleable
       Toggleable.configuration.instrumentor&.latency(duration, 'redis_mass_set', 'ok')
 
       mapping.transform_values!(&:to_s)
-      notify_changes(mapping, actor) if Toggleable.configuration.notify_host
+      Toggleable.configuration.notifier&.notify(mapping, actor, namespace)
     end
 
     private
@@ -107,8 +107,7 @@ module Toggleable
     end
 
     def read_key_expired?(key, namespace)
-      expired = @_last_key_read_at[namespace][key] < Time.now.localtime - Toggleable.configuration.expiration_time
-      return expired
+      @_last_key_read_at[namespace][key] < Time.now.localtime - Toggleable.configuration.expiration_time
     end
 
     def log_changes(mapping, actor, namespace)
@@ -119,15 +118,7 @@ module Toggleable
     end
 
     def should_notify?(key, prev, value)
-      Toggleable.configuration.notify_host && !Toggleable.configuration.blacklisted_notif_key&.include?(key) && (prev != value.to_s)
-    end
-
-    def notify_changes(mapping, actor)
-      url = "#{Toggleable.configuration.notify_host}/_internal/toggle-features/bulk-notify"
-      payload = { mappings: mapping, user_id: actor.to_s }.to_json
-      RestClient::Resource.new(url).post payload, timeout: 2, open_timeout: 1
-    rescue StandardError
-      nil
+      !Toggleable.configuration.blacklisted_notif_key&.include?(key) && (prev != value.to_s)
     end
   end
 end

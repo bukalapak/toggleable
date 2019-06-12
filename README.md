@@ -30,6 +30,7 @@ You can pass the configurations for toggleable in the block above. Here is the c
 * storage : Storage persistence to use, you should pass an object that responds to methods that specified in `Toggleable::StorageAbstract` class or use the provided implementation in `toggleable/storage/*.rb`. If not provided, it will use memory store as persistence. Default: `Toggleable::MemoryStore`
 * namespace : Prefix namespace for your stored keys. Default: `toggleable`
 * logger : Logger to use, you should pass an object that respond to methods that speciied in `Toggleable::LoggerAbstract` class. It will not log if none provided. Default: `none`
+* notifier: Notifier to use for notify any changes made, you should pass an object that respond to methods that specified in `Toggleable::NotifierAbstract` class. It will not log if none provided. Default: `none`
 
 ### Usage
 

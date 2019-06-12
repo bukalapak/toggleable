@@ -58,15 +58,7 @@ module Toggleable
         duration = (Time.now - start_time)
         Toggleable.configuration.instrumentor&.latency(duration, 'redis_set', 'ok')
 
-        notify_changes({ key => value.to_s }, actor) if Toggleable.configuration.notify_host && !Toggleable.configuration.blacklisted_notif_key&.include?(key)
-      end
-
-      def notify_changes(mapping, actor)
-        url = "#{Toggleable.configuration.notify_host}/_internal/toggle-features/bulk-notify"
-        payload = { mappings: mapping, user_id: actor.to_s }.to_json
-        RestClient::Resource.new(url).post payload, timeout: 2, open_timeout: 1
-      rescue StandardError
-        nil
+        Toggleable.configuration.notifier&.notify({ key => value.to_s }, actor, namespace) if !Toggleable.configuration.blacklisted_notif_key&.include?(key)
       end
 
       def toggle_active(namespace)

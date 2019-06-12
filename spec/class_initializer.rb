@@ -24,5 +24,4 @@ logger = SampleLogger.new
 
 Toggleable.configure do |t|
   t.logger = logger
-  t.notify_host = 'http://localhost:5858'
 end
