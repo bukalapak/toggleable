@@ -58,7 +58,7 @@ module Toggleable
         duration = (Time.now - start_time)
         Toggleable.configuration.instrumentor&.latency(duration, 'redis_set', 'ok')
 
-        Toggleable.configuration.notifier&.notify({ key => value.to_s }, actor, namespace) if !Toggleable.configuration.blacklisted_notif_key&.include?(key)
+        Toggleable.configuration.notifier&.notify({ key => value.to_s }, actor, namespace) unless Toggleable.configuration.blacklisted_notif_key&.include?(key)
       end
 
       def toggle_active(namespace)
