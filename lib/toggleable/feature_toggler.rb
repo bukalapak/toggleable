@@ -1,7 +1,6 @@
 # frozen_string_literal: false
 
 require 'singleton'
-require 'rest-client'
 
 module Toggleable
   # Toggleable::FeatureToggler provides an instance to manage all toggleable keys.
