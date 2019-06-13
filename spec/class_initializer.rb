@@ -13,8 +13,8 @@ class SampleLogger < Toggleable::LoggerAbstract
     @logger = Logger.new(STDOUT)
   end
 
-  def log(key:, value:, actor:)
-    logger.info "Change on #{key} to #{value} by #{actor}"
+  def log(key:, value:, actor:, namespace:)
+    logger.info "Change on #{key} to #{value} in namespace #{namespace} by #{actor}"
   end
 end
 
@@ -24,5 +24,4 @@ logger = SampleLogger.new
 
 Toggleable.configure do |t|
   t.logger = logger
-  t.notify_host = 'http://localhost:5858'
 end

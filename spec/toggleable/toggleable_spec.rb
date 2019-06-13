@@ -61,10 +61,11 @@ RSpec.describe Toggleable::Base, :type => :model do
 
   describe 'logic behavior' do
     let(:actor_id) { 1 }
+    let(:namespace_default) { Toggleable.configuration.namespace }
 
     context 'activation' do
       it do
-        expect(Toggleable.configuration.logger).to receive(:log).with(key: SampleFeature.key, value: true, actor: actor_id).and_return(true)
+        expect(Toggleable.configuration.logger).to receive(:log).with(key: SampleFeature.key, value: true, actor: actor_id, namespace: namespace_default).and_return(true)
         subject.activate!(actor: actor_id)
         expect(subject.active?).to be_truthy
       end
@@ -76,7 +77,7 @@ RSpec.describe Toggleable::Base, :type => :model do
       end
 
       it do
-        expect(Toggleable.configuration.logger).to receive(:log).with(key: SampleFeature.key, value: true, actor: actor_id).and_return(true)
+        expect(Toggleable.configuration.logger).to receive(:log).with(key: SampleFeature.key, value: true, actor: actor_id, namespace: namespace_default).and_return(true)
         subject.activate!(actor: actor_id)
         expect(subject.active?).to be_truthy
       end
@@ -84,7 +85,7 @@ RSpec.describe Toggleable::Base, :type => :model do
 
     context 'deactivation' do
       it do
-        expect(Toggleable.configuration.logger).to receive(:log).with(key: SampleFeature.key, value: false, actor: actor_id).and_return(true)
+        expect(Toggleable.configuration.logger).to receive(:log).with(key: SampleFeature.key, value: false, actor: actor_id, namespace: namespace_default).and_return(true)
         subject.deactivate!(actor: actor_id)
         expect(subject.active?).to be_falsy
       end
@@ -96,8 +97,20 @@ RSpec.describe Toggleable::Base, :type => :model do
       end
 
       it do
-        expect(Toggleable.configuration.logger).to receive(:log).with(key: SampleFeature.key, value: false, actor: actor_id).and_return(true)
+        expect(Toggleable.configuration.logger).to receive(:log).with(key: SampleFeature.key, value: false, actor: actor_id, namespace: nil).and_return(true)
         subject.deactivate!(actor: actor_id)
+        expect(subject.active?).to be_falsy
+      end
+    end
+
+    context 'activation with memoization' do
+      before do
+        allow(Toggleable.configuration).to receive(:use_memoization).and_return(1)
+      end
+
+      it do
+        expect(Toggleable.configuration.logger).to receive(:log).with(key: SampleFeature.key, value: true, actor: actor_id, namespace: namespace_default).and_return(true)
+        subject.activate!(actor: actor_id)
         expect(subject.active?).to be_falsy
       end
     end
@@ -124,6 +137,44 @@ RSpec.describe Toggleable::Base, :type => :model do
         subject.process do
           subject.deactivate!
         end
+        expect(subject.active?).to be_falsy
+      end
+    end
+  end
+
+  describe 'multiple namespace' do
+    let(:actor_id) { 1 }
+    let(:namespace_other) { "features_1" }
+    let(:namespace_default) { Toggleable.configuration.namespace }
+
+    context 'activation' do
+      it 'will activate toggle in given namespace' do
+        expect(Toggleable.configuration.logger).to receive(:log).with(key: SampleFeature.key, value: true, actor: actor_id, namespace: namespace_other).and_return(true)
+        subject.activate!(actor: actor_id, namespace: namespace_other)
+        expect(subject.active?(namespace: namespace_default)).to be_falsy
+        expect(subject.active?(namespace: namespace_other)).to be_truthy
+      end
+
+      it 'will activate in default namespace if namespace not given' do
+        expect(Toggleable.configuration.logger).to receive(:log).with(key: SampleFeature.key, value: true, actor: actor_id, namespace: namespace_default).and_return(true)
+        subject.activate!(actor: actor_id)
+        expect(subject.active?(namespace: namespace_default)).to be_truthy
+        expect(subject.active?).to be_truthy
+      end
+    end
+
+    context 'deactivation' do
+      it 'will deactivate toggle in given namespace' do
+        expect(Toggleable.configuration.logger).to receive(:log).with(key: SampleFeature.key, value: false, actor: actor_id, namespace: namespace_other).and_return(true)
+        subject.deactivate!(actor: actor_id, namespace: namespace_other)
+        expect(subject.active?(namespace: namespace_default)).to be_truthy
+        expect(subject.active?(namespace: namespace_other)).to be_falsy
+      end
+
+      it 'will deactivate in default namespace if namespace not given' do
+        expect(Toggleable.configuration.logger).to receive(:log).with(key: SampleFeature.key, value: false, actor: actor_id, namespace: namespace_default).and_return(true)
+        subject.deactivate!(actor: actor_id)
+        expect(subject.active?(namespace: namespace_default)).to be_falsy
         expect(subject.active?).to be_falsy
       end
     end

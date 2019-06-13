@@ -5,6 +5,7 @@ require 'toggleable/configuration'
 require 'toggleable/storage'
 require 'toggleable/instrumentor_abstract'
 require 'toggleable/logger_abstract'
+require 'toggleable/notifier_abstract'
 require 'toggleable/feature_toggler'
 require 'toggleable/base'
 
@@ -25,7 +26,7 @@ module Toggleable
 
     # set default configuration for storage and namespace if none was provided
     configuration.storage         ||= Toggleable::MemoryStore.new
-    configuration.namespace       ||= 'toggleable_rspec'
+    configuration.namespace       ||= 'toggleable'
     configuration.expiration_time ||= 5.minutes
   end
 end

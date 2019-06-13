@@ -1,11 +1,11 @@
 # frozen_string_literal: true
 
 module Toggleable
-  # Toggleable::LoggerAbstract describes the interface class for logger.
-  class LoggerAbstract
-    # the redis you provide must implement these methods
+  # Toggleable::NotifierAbstract describes the interface class for notifier.
+  class NotifierAbstract
+    ## the notifier you provide must implement these methods
 
-    def log(_key:, _value:, _actor:, _namespace:)
+    def notify(_mapping, _actor, _namespace)
       raise NotImplementedError, "You must implement #{method_name}"
     end
 

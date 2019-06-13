@@ -30,6 +30,7 @@ You can pass the configurations for toggleable in the block above. Here is the c
 * storage : Storage persistence to use, you should pass an object that responds to methods that specified in `Toggleable::StorageAbstract` class or use the provided implementation in `toggleable/storage/*.rb`. If not provided, it will use memory store as persistence. Default: `Toggleable::MemoryStore`
 * namespace : Prefix namespace for your stored keys. Default: `toggleable`
 * logger : Logger to use, you should pass an object that respond to methods that speciied in `Toggleable::LoggerAbstract` class. It will not log if none provided. Default: `none`
+* notifier: Notifier to use for notify any changes made, you should pass an object that respond to methods that specified in `Toggleable::NotifierAbstract` class. It will not log if none provided. Default: `none`
 
 ### Usage
 
@@ -53,17 +54,38 @@ SampleFeature.deactivate! actor: user.id
 # => 'false'
 ```
 
+Toggleable support multiple namespace. You can provide the namespace in method arguments. If no namespace provided, it will use default namespace from Toggleable.configuration.namespace
+
+```ruby
+SampleFeature.active?(namespace: 'other_namespace')
+# => 'false'
+
+SampleFeature.activate!(namespace: 'other_namespace')
+# => "true"
+
+SampleFeature.active?(namespace: 'other_namespace')
+# => "true"
+
+SampleFeature.active?
+# => "false"
+
+```
+
 ### Managing Toggles
 
 You could manage your toggles using `Toggleable::FeatureToggler` class.
 
-```
+```ruby
 # This will get all keys and its value
 Toggleable::FeatureToggler.instance.available_features
 # => {'key': 'true', 'other_key': 'false'}
 
 Toggleable::FeatureToggler.mass_toggle!(mapping, actor: user.id)
 # => 'true'
+
+# Toggleable::FeatureToggler also support multiple namespace
+Toggleable::FeatureToggler.instance.available_features(namespace: 'other_namespace')
+# => {'other_key': 'true', 'another_key': 'false'}
 ```
 
 ### Redis Store Implementation
