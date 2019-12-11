@@ -23,7 +23,7 @@ Toggleable.configure do |t|
 end
 ```
 
-You can pass the configurations for toggleable in the block above. Here is the configurable list:
+You can pass the configurations for toggleable in the block above. Here is the configurables list:
 
 * use_memoization : set `true` to use memoization, so it doesn't hit your storage often. Default: `false`
 * expiration_time : Duration for memoization expiry. Default: `5 minutes`
