@@ -50,7 +50,7 @@ module Toggleable
       private
 
       def toggle_active(user_id = nil)
-        return @_toggle_active if defined?(@_toggle_active) && !read_expired? && !user_id && Toggleable.configuration.use_memoization
+        return @_toggle_active if defined?(@_toggle_active) && !read_expired? && user_id.nil? && Toggleable.configuration.use_memoization
 
         @_last_read_at = Time.now.localtime
         @_toggle_active = Toggleable.configuration.enable_palanca ? Toggleable::FeatureToggler.instance.get_key(key, user_id) : Toggleable.configuration.storage.get(key, namespace: Toggleable.configuration.namespace)

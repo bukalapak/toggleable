@@ -31,7 +31,7 @@ module Toggleable
     def get_key(key, user_id = nil)
       @_toggle_active ||= {}
       @_last_key_read_at ||= {}
-      return @_toggle_active[key] if !@_toggle_active[key].nil? && !read_key_expired?(key) && Toggleable.configuration.use_memoization
+      return @_toggle_active[key] if !@_toggle_active[key].nil? && !read_key_expired?(key) && user_id.nil? && Toggleable.configuration.use_memoization
 
       @_last_key_read_at[key] = Time.now.localtime
 
