@@ -23,7 +23,7 @@ Gem::Specification.new do |spec|
 
   spec.add_runtime_dependency "activesupport", ">= 4.0.0"
   spec.add_development_dependency "bundler", "~> 1.14"
-  spec.add_development_dependency "rake", "~> 10.0"
+  spec.add_development_dependency "rake", "~> 13.0"
   spec.add_development_dependency "simplecov", ">= 0.16.1"
   spec.add_development_dependency "redis", "~> 3.0"
   spec.add_development_dependency "dotenv", ">= 2.4.0"
