@@ -33,6 +33,9 @@ module Toggleable
       @_last_key_read_at ||= {}
       return @_toggle_active[key] if !@_toggle_active[key].nil? && !read_key_expired?(key) && Toggleable.configuration.use_memoization
 
+      Mutant.metric.counter('toggleable_api_attempt', 1, key)
+      start_time = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+
       @_last_key_read_at[key] = Time.now.localtime
 
       begin
@@ -43,10 +46,18 @@ module Toggleable
           req.params['user_id'] = user_id.to_i if user_id
         end
 
+        duration = (Process.clock_gettime(Process::CLOCK_MONOTONIC) - start_time)
+        Mutant.metric.counter("toggleable_api_success", 1, key: key)
+        Mutant.metric.histogram("toggleable_api_latency", duration, key: key)
+
         result = ::JSON.parse(response.body)
         @_toggle_active[key] = result['data']['status']
       rescue Faraday::ConnectionFailed, Faraday::TimeoutError, Faraday::Error => e
+        Mutant.metric.counter("toggleable_api_error", 1, key: key, error_type: e.class.to_s.demodulize)
         Toggleable.configuration.logger.error(message: "GET #{key} TIMEOUT: #{e.message}")
+        raise e
+      rescue => e
+        Mutant.metric.counter("toggleable_api_error", 1, key: key, error_type: e.class.to_s.demodulize)
         raise e
       end
       @_toggle_active[key]
